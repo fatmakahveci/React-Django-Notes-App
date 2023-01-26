@@ -1,11 +1,15 @@
 import './App.css';
-import Header from './components/Header';
+
 import { 
   Routes,
   Route
 } from "react-router-dom";
-import NoteList from './pages/NoteList';
+import PrivateRoute from './utils/PrivateRoute';
+
+import Header from './components/Header';
 import Note from './pages/Note';
+import NoteList from './pages/NoteList';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   return (
@@ -14,8 +18,12 @@ function App() {
           <header className="App-header">  
             <Header />
             <Routes>
-              <Route path="/" element={<NoteList />} />
-              <Route path="/notes/:noteId/" element={<Note />} />
+              <Route element={<PrivateRoute />}>
+                <Route path="/" element={<NoteList />} exact />
+                <Route path="/notes/" element={<NoteList />} />
+                <Route path="/notes/:noteId/" element={<Note />} />
+              </Route>
+              <Route path="/login" element={<LoginPage />} />
             </Routes>
           </header>
         </div>

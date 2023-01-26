@@ -1,9 +1,11 @@
-import React from 'react'
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
     <div className='app-header'>
-      <h1>&#10048; Notes &#10048;</h1>
+      <Link to="/">Home</Link>
+      <Link to="/login">Login</Link>
     </div>
   )
 }
