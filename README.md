@@ -2,7 +2,10 @@
 
 # Todo App
 
-A project for learning purposes.
+🎯 A project for learning purposes.
+
+🦦 You can check my [Django](https://fatmakahveci.com/coding/django/) and [JavaScript](https://fatmakahveci.com/coding/javascript/) notes in my blog.
+
 
 ## Installation
 
@@ -64,7 +67,3 @@ npm start
 # For deployment
 npm run build
 ```
-
----
-
-- You can check my Django notes in [my blog](https://fatmakahveci.com/coding/django/).
