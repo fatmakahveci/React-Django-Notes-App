@@ -1,55 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { ReactComponent as LeftArrow } from '../assets/left_arrow.svg';
+import axios from 'axios';
 
-const Note = ({ props, history }) => {
+const Note = () => {
     let { noteId } = useParams();
     let [ note, setNote ] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        getNote()
-    }, [noteId]);
+    useEffect(() => { getNote(noteId) }, [noteId]);
 
-    let getNote = async () => {
+    let getNote = async (noteId) => {
         if (noteId === 'new') return
 
-        let response = await fetch(`/notes/${noteId}/`)
-        let data = await response.json()
-        setNote(data)
+        await axios.get(`/notes/${noteId}/`)
+                   .then(response => setNote(response.data));
     }
 
     let createNote = async () => {
-        await fetch(`/notes/`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(note)
-        })
+        await axios.post('/notes/', note)
+                   .then(response => {
+                        setNote(response.data)
+                        navigate('/notes')
+                    });
     }
 
     let updateNote = async () => {
-        await fetch(`/notes/${noteId}/`, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(note)
-        })
+        await axios.put(`/notes/${noteId}/`, note)
+                   .then(response => {
+                        setNote(response.data)
+                        navigate('/notes/')
+                   });
     }
 
     let deleteNote = async () => {
-        if (noteId !== 'new') { 
-            await fetch(`/notes/${noteId}`, {
-                method: "DELETE",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(note)
-            })
-        }
-        navigate('/')
+        if (noteId === 'new') return
+
+        axios.delete(`/notes/${noteId}`)
+             .then(response => navigate('/notes/'));
     }
 
     let handleSubmit = () => {
@@ -62,16 +50,13 @@ const Note = ({ props, history }) => {
         } else if (note !== null){
             createNote()
         }
-        navigate('/')
     }
 
     return (
         <div className="note">
             <div className="note-header">
                 <h3>
-                    <Link to="/">
-                        <LeftArrow onClick={handleSubmit} />
-                    </Link>
+                    <button onClick={handleSubmit}><LeftArrow /></button>
                 </h3>
                 {noteId !== 'new' ? (<button onClick={deleteNote}>Delete</button>) : (<p></p>)}
             </div>

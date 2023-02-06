@@ -1,21 +1,16 @@
-import React, {
-    useState,
-    useEffect
-} from 'react';
+import React, { useState, useEffect } from 'react';
 import ListItem from '../components/ListItem';
 import AddButton from '../components/AddButton';
+import axios from 'axios';
 
 const NoteList = () => {
     let [notes, setNotes] = useState([])
 
-    useEffect(() => {
-        getNotes()
-    }, [])
+    useEffect(() => { getNotes() }, [])
 
     let getNotes = async () => {
-        let response = await fetch('/notes/')
-        let data = await response.json()
-        setNotes(data)
+        await axios.get(`/notes/`)
+                   .then(response => setNotes(response.data));
     }
 
     return (

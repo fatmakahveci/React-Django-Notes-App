@@ -1,30 +1,44 @@
 import './App.css';
+import { useState } from 'react';
+import { Routes, Route } from "react-router-dom";
 
-import { 
-  Routes,
-  Route
-} from "react-router-dom";
-import PrivateRoute from './utils/PrivateRoute';
+import { AuthProvider } from './context/AuthContext';
 
 import Header from './components/Header';
+import PageNotFound from './utils/PageNotFound';
+
 import Note from './pages/Note';
 import NoteList from './pages/NoteList';
-import LoginPage from './pages/LoginPage';
+
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
       <div className="container dark">
         <div className="app">
           <header className="App-header">  
-            <Header />
-            <Routes>
-              <Route element={<PrivateRoute />}>
-                <Route path="/" element={<NoteList />} exact />
-                <Route path="/notes/" element={<NoteList />} />
-                <Route path="/notes/:noteId/" element={<Note />} />
-              </Route>
-              <Route path="/login" element={<LoginPage />} />
-            </Routes>
+            <AuthProvider> 
+              <Header setIsLoggedIn={setIsLoggedIn}/>
+              <Routes>
+                <Route path="*" element={<PageNotFound />} />
+                <Route exact path="/" element={<Home />} />
+                <Route exact path="/register" element={<Register />} />
+                {isLoggedIn ? (
+                  <>
+                    <Route exact path='/notes/' element={<NoteList />} />
+                    <Route path='/notes/:noteId/' element={<Note />} />
+                  </> ) : (
+                  <>
+                    <Route path='/login' element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+                  </>
+                )}
+              </Routes>
+            </AuthProvider>
           </header>
         </div>
       </div>
