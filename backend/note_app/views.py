@@ -48,18 +48,18 @@ def testEndPoint(request):
     return Response({'response': data}, status=status.HTTP_200_OK)
   return Response({}, status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def getNotes(request):
   if request.method == "GET":
     return getNotesInfo(request)
-  elif request.method == "POST":
-    return createNote(request)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def getNote(request, pk):
   if request.method == "GET":
     return getNoteInfo(request, pk)
+  elif request.method == "POST":
+    return createNote(request)
   elif request.method == "PUT":
     return updateNote(request, pk)
   elif request.method == "DELETE":
-    return deleteNote(request, pk)
+    return deleteNote(pk)

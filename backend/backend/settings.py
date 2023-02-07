@@ -125,16 +125,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/') # new
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS_ALLOW_ALL_ORIGINS = True # new
+CORS_ALLOW_ALL_ORIGINS = True # new
+
+CORS_ORIGIN_WHITELIST = ( 'localhost:8080', )
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://localhost:8080",
     "http://localhost:8000",
     "http://localhost:9000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
-    "http://127.0.0.1:8080",
     "http://127.0.0.1:9000",
 ]
 
@@ -144,7 +144,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PARSER_CLASSES': [

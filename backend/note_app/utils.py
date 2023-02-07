@@ -29,7 +29,7 @@ def updateNote(request, pk):
 
   return Response(serializer.data)
 
-def deleteNote(request, pk):
+def deleteNote(pk):
   note = Note.objects.get(id=pk)
   note.delete()
   return Response('Note is deleted.')

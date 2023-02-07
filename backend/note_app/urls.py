@@ -20,6 +20,4 @@ urlpatterns = [
 
   path('notes/', views.getNotes, name="notes"),
   path('notes/<str:pk>/', views.getNote, name="note"),
-
-  path('test/', views.testEndPoint, name='test'),
 ]

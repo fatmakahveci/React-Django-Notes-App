@@ -3,8 +3,6 @@ import AuthContext from '../context/AuthContext';
 
 function Login ({ setIsLoggedIn }) {
 
-    const INITIAL_STATE = {username: '', password: ''};
-
     const { user, loginUser } = useContext(AuthContext);
 
     useEffect(() => {

@@ -12,19 +12,23 @@ const Header = ({ setIsLoggedIn }) => {
       }
   }, [user]);
 
-  return (
-    <div className='app-header'>
-      <Link to="/">Home</Link>
-      <Link to="/register">Register</Link>
-      <Link to="/notes/">Notes</Link>
-      {user ?
-        (<p onClick={logoutUser}>Logout</p>)
-        :
-        (<Link to='/login'>Login</Link>)
-      }
-      {user && <p>Hello {user.username}</p>}
-    </div>
-  )
+  if (user) {
+    return (
+      <div className='app-header'>
+        <Link to="/">Home</Link>
+        <Link to="/notes/">Notes</Link>
+        <p onClick={logoutUser}>Logout</p>
+      </div>
+    )
+  } else {
+    return (
+      <div className='app-header'>
+        <Link to="/">Home</Link>
+        <Link to="/register">Register</Link>
+        <Link to='/login'>Login</Link>
+      </div>
+    )
+  }
 }
 
 export default Header
