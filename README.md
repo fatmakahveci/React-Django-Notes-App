@@ -4,7 +4,7 @@
 
 🎯 A project for learning purposes.
 
-🦦 You can check my [Django](https://fatmakahveci.com/django-note/django/), [JavaScript](https://fatmakahveci.com/javascript-note/javascript/), and [python](https://fatmakahveci.com/python-note/) notes in my blog.
+🦦 You can check my [Django](https://fatmakahveci.com/django-note/django/), [React](https://fatmakahveci.com/react-note/react/), [JavaScript](https://fatmakahveci.com/javascript-note/javascript/), and [python](https://fatmakahveci.com/python-note/) notes in my blog.
 
 
 ## Installation
