@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -13,6 +14,11 @@ SECRET_KEY = 'django-insecure-52ti8j6mn31u9gg^h(%*2spinev0c1#sdqy*z5hcjq11=igfnb
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+logging.basicConfig(
+    level = logging.DEBUG,
+    format = '%(asctime)s %(levelname)s %(message)s',
+)
 
 # Application definition
 
@@ -127,7 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True # new
 
-CORS_ORIGIN_WHITELIST = ( 'localhost:8080', )
+CORS_ORIGIN_WHITELIST = ( 'http://localhost:8000', )
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",

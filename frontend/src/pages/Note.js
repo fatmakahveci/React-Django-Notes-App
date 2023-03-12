@@ -21,12 +21,12 @@ const Note = () => {
         await axios.post('/notes/', note)
                    .then(response => {
                         setNote(response.data)
-                        navigate('/notes')
+                        navigate('/notes/')
                     });
     }
 
     let updateNote = async () => {
-        await axios.put(`/notes/${noteId}/`, note)
+        await axios.post(`/notes/${noteId}/`, note)
                    .then(response => {
                         setNote(response.data)
                         navigate('/notes/')
@@ -36,7 +36,7 @@ const Note = () => {
     let deleteNote = async () => {
         if (noteId === 'new') return
 
-        axios.delete(`/notes/${noteId}`)
+        axios.delete(`/notes/${noteId}/`)
              .then(response => navigate('/notes/'));
     }
 

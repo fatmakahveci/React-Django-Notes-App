@@ -1,3 +1,4 @@
+from django.test import override_settings
 from rest_framework import viewsets, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -5,7 +6,6 @@ from rest_framework.response import Response
 from .serializers import NoteSerializer, RegisterSerializer, UserSerializer
 from django.contrib.auth.models import User
 from .models import Note
-from .utils import getNotesInfo, getNoteInfo, createNote, updateNote, deleteNote
 
 class UserList(generics.ListAPIView):
   queryset = User.objects.all()
@@ -22,10 +22,6 @@ class RegisterView(generics.CreateAPIView):
   permission_classes = (AllowAny,)
   serializer_class = RegisterSerializer
     
-class NoteView(viewsets.ModelViewSet):
-  serializer_class = NoteSerializer
-  permission_classes = (IsAuthenticated,)
-  queryset = Note.objects.all()
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -48,18 +44,36 @@ def testEndPoint(request):
     return Response({'response': data}, status=status.HTTP_200_OK)
   return Response({}, status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def getNotes(request):
-  if request.method == "GET":
-    return getNotesInfo(request)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def getNotesOrCreateNote(request):
+  if request.method == 'GET':
+    notes = Note.objects.all()
+    serializer = NoteSerializer(notes, many=True)
+    return Response(serializer.data)
+  else:
+    data = request.data
+    note = Note.objects.create(user=request.user, body=data['body'])
+    serializer = NoteSerializer(note, many=False)
+    return Response(serializer.data)
 
-@api_view(['GET', 'POST', 'PUT', 'DELETE'])
-def getNote(request, pk):
-  if request.method == "GET":
-    return getNoteInfo(request, pk)
-  elif request.method == "POST":
-    return createNote(request)
-  elif request.method == "PUT":
-    return updateNote(request, pk)
-  elif request.method == "DELETE":
-    return deleteNote(pk)
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def getOrModifyNote(request, pk):
+  if request.method == 'GET':
+    note = Note.objects.get(id=pk)
+    serializer = NoteSerializer(note, many=False)
+    return Response(serializer.data)
+  elif request.method == 'POST':
+    data = request.data # JSON
+    note = Note.objects.get(id=pk)
+    serializer = NoteSerializer(instance=note, data=data)
+    if serializer.is_valid():
+      serializer.save()
+    return Response(serializer.data)
+  elif request.method == 'DELETE':
+    note = Note.objects.get(id=pk)
+    note.delete()
+    return Response('Note is deleted.')
+  else:
+    print("throw error here")
