@@ -19,5 +19,4 @@ urlpatterns = [
   path('notes/<str:pk>/', views.getOrModifyNote, name="get-or-modify"),
 
   path('', include(router.urls)),
-  
 ]

@@ -21,7 +21,6 @@ class RegisterView(generics.CreateAPIView):
   queryset = User.objects.all()
   permission_classes = (AllowAny,)
   serializer_class = RegisterSerializer
-    
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -33,7 +32,7 @@ def getRoutes(request):
   return Response(routes)
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,])
 def testEndPoint(request):
   if request.method == 'GET':
     data = f"Congratulation {request.user}, your API just responded to GET request"
@@ -45,7 +44,7 @@ def testEndPoint(request):
   return Response({}, status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,])
 def getNotesOrCreateNote(request):
   if request.method == 'GET':
     notes = Note.objects.all()
@@ -58,7 +57,7 @@ def getNotesOrCreateNote(request):
     return Response(serializer.data)
 
 @api_view(['GET', 'POST', 'DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated,])
 def getOrModifyNote(request, pk):
   if request.method == 'GET':
     note = Note.objects.get(id=pk)

@@ -26,6 +26,8 @@ const Note = () => {
     }
 
     let updateNote = async () => {
+        if (noteId === 'new') return
+
         await axios.post(`/notes/${noteId}/`, note)
                    .then(response => {
                         setNote(response.data)
