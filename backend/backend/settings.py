@@ -35,6 +35,21 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist', # new
 ]
 
+CORS_ORIGIN_WHITELIST = ( 'http://localhost:8000', )
+
+CORS_ALLOW_CREDENTIALS = True # new
+
+# CORS_ALLOW_ALL_ORIGINS = True # new
+
+CORS_ALLOWED_ORIGINS = [ # new
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:9000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:9000",
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -130,21 +145,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/') # new
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# CORS_ALLOW_ALL_ORIGINS = True # new
-
-CORS_ORIGIN_WHITELIST = ( 'http://localhost:8000', )
-
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://localhost:9000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:9000",
-]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
