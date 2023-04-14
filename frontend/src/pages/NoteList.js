@@ -12,13 +12,14 @@ const NoteList = () => {
     getNotes();
   }, []);
 
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + String(authTokens.access),
+    },
+  };
+
   let getNotes = async () => {
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + String(authTokens.access),
-      },
-    };
     await axios
       .get(`/notes/`, config)
       .then((response) => setNotes(response.data));
