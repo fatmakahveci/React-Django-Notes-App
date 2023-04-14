@@ -1,5 +1,5 @@
-import React from 'react'
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const ListItem = ({ note }) => {
   return (
@@ -10,7 +10,7 @@ const ListItem = ({ note }) => {
         </div>
       </Link>
     </div>
-  )
-}
+  );
+};
 
-export default ListItem
+export default ListItem;

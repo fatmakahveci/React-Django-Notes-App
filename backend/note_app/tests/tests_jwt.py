@@ -7,6 +7,7 @@ test_users = [
     {"username": "testuser2", "password": "testpassword2"},
 ]
 
+
 class LoginTest(TestCase):
     def setUp(self):
         for user in test_users:
