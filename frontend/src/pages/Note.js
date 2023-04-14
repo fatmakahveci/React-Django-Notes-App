@@ -17,23 +17,20 @@ const Note = () => {
 
   const config = {
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + String(authTokens.access)
-    }
-  }
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + String(authTokens.access),
+    },
+  };
 
   let getNote = async (noteId) => {
     if (noteId === "new") return;
 
-    await axios
-      .get(`/notes/${noteId}/`, config)
-      .then((response) => {
-        setNote(response.data);
-      });
+    await axios.get(`/notes/${noteId}/`, config).then((response) => {
+      setNote(response.data);
+    });
   };
 
   let createNote = async () => {
-
     await axios.post("/notes/", note, config).then((response) => {
       setNote(response.data);
       navigate("/notes/");
@@ -52,7 +49,9 @@ const Note = () => {
   let deleteNote = async () => {
     if (noteId === "new") return;
 
-    axios.delete(`/notes/${noteId}/`, config).then((response) => navigate("/notes/"));
+    axios
+      .delete(`/notes/${noteId}/`, config)
+      .then((response) => navigate("/notes/"));
   };
 
   let handleSubmit = () => {
