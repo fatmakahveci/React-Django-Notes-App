@@ -10,11 +10,6 @@ const Note = () => {
   const navigate = useNavigate();
 
   let { authTokens } = useContext(AuthContext);
-
-  useEffect(() => {
-    getNote(noteId);
-  }, [noteId]);
-
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -22,6 +17,9 @@ const Note = () => {
     },
   };
 
+  useEffect(() => {
+    getNote(noteId);
+  }, [noteId]);
   let getNote = async (noteId) => {
     if (noteId === "new") return;
 
