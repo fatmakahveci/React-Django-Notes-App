@@ -4,6 +4,7 @@ import json
 
 test_user = {"username": "user", "password": "password"}
 
+
 class NotesTest(TestCase):
 
     def setUp(self):
@@ -13,111 +14,115 @@ class NotesTest(TestCase):
 
     def get_token(self):
         res = self.client.post('/token/',
-                data=json.dumps({
-                    'username': test_user["username"],
-                    'password': test_user["password"],
-                }),
-                content_type='application/json',
-            )
+                               data=json.dumps({
+                                   'username': test_user["username"],
+                                   'password': test_user["password"],
+                               }),
+                               content_type='application/json',
+                               )
         result = json.loads(res.content)
         self.assertTrue("access" in result)
         return result["access"]
 
-    def test_add_notes_forbidden(self): # Test for POST, unauthorized users will not be allowed to POST new data
+    # Test for POST, unauthorized users will not be allowed to POST new data
+    def test_add_notes_forbidden(self):
         res = self.client.post(f'/notes/',
-                data=json.dumps({
-                    'user': 1,
-                    'body': 'body',
-                    'updated': '2023-01-01',
-                    'created': '2023-01-01',
-                }),
-                content_type='application/json',
-            )
+                               data=json.dumps({
+                                   'user': 1,
+                                   'body': 'body',
+                                   'updated': '2023-01-01',
+                                   'created': '2023-01-01',
+                               }),
+                               content_type='application/json',
+                               )
         self.assertEquals(res.status_code, 401)
 
         res = self.client.post('/notes/',
-                data = json.dumps({
-                    'user': 1,
-                    'body': 'body',
-                    'updated': '2023-01-01',
-                    'created': '2023-01-01',
-                }),
-                content_type='application/json',
-                HTTP_AUTHORIZATION=f'Bearer WRONG TOKEN'
-            )
+                               data=json.dumps({
+                                   'user': 1,
+                                   'body': 'body',
+                                   'updated': '2023-01-01',
+                                   'created': '2023-01-01',
+                               }),
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION=f'Bearer WRONG TOKEN'
+                               )
         self.assertEquals(res.status_code, 401)
 
-    def test_add_notes_ok(self): # Test for POST, authorized users will be allowed to post new data
+    # Test for POST, authorized users will be allowed to post new data
+    def test_add_notes_ok(self):
         token = self.get_token()
         res = self.client.post('/notes/',
-                data = json.dumps({
-                    'user': 1,
-                    'body': 'body',
-                    'updated': '2023-01-01',
-                    'created': '2023-01-01',
-                }),
-                content_type='application/json',
-                HTTP_AUTHORIZATION=f'Bearer {token}'
-            )
+                               data=json.dumps({
+                                   'user': 1,
+                                   'body': 'body',
+                                   'updated': '2023-01-01',
+                                   'created': '2023-01-01',
+                               }),
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION=f'Bearer {token}'
+                               )
         self.assertEquals(res.status_code, 200)
         result = json.loads(res.content)
 
         self.assertEquals(result['user'], 1)
         self.assertEquals(result['body'], 'body')
-        self.assertIn('updated', result) # current time
-        self.assertIn('created', result) # current time
-    
-    def test_get_notes(self): # Test for GET method
+        self.assertIn('updated', result)  # current time
+        self.assertIn('created', result)  # current time
+
+    def test_get_notes(self):  # Test for GET method
         token = self.get_token()
 
         res = self.client.post('/notes/',
-                data = json.dumps({
-                    'user': 1,
-                    'body': 'body1',
-                    'updated': '2023-01-01',
-                    'created': '2023-01-02',
-                }),
-                content_type='application/json',
-                HTTP_AUTHORIZATION=f'Bearer {token}'
-            )
+                               data=json.dumps({
+                                   'user': 1,
+                                   'body': 'body1',
+                                   'updated': '2023-01-01',
+                                   'created': '2023-01-02',
+                               }),
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION=f'Bearer {token}'
+                               )
         self.assertEquals(res.status_code, 200)
         user1 = json.loads(res.content)
 
         res = self.client.post('/notes/',
-                data = json.dumps({
-                    'user': 2,
-                    'body': "body2",
-                    'updated': "2023-01-03",
-                    'created': "2023-01-04",
-                }),
-                content_type='application/json',
-                HTTP_AUTHORIZATION=f'Bearer {token}'
-            )
+                               data=json.dumps({
+                                   'user': 2,
+                                   'body': "body2",
+                                   'updated': "2023-01-03",
+                                   'created': "2023-01-04",
+                               }),
+                               content_type='application/json',
+                               HTTP_AUTHORIZATION=f'Bearer {token}'
+                               )
         self.assertEquals(res.status_code, 200)
         user2 = json.loads(res.content)
 
         res = self.client.get('/notes/',
-                            content_type='application/json',
-                            HTTP_AUTHORIZATION=f'Bearer {token}'
-                            )
+                              content_type='application/json',
+                              HTTP_AUTHORIZATION=f'Bearer {token}'
+                              )
 
         self.assertEquals(res.status_code, 200)
         result = json.loads(res.content)
 
         self.assertEquals(len(result), 2)  # 2 records
-        self.assertTrue(result[0]["id"] == user1["id"] or result[1]["id"] == user1["id"])
-        self.assertTrue(result[0]["id"] == user2["id"] or result[1]["id"] == user2["id"])
+        self.assertTrue(result[0]["id"] == user1["id"]
+                        or result[1]["id"] == user1["id"])
+        self.assertTrue(result[0]["id"] == user2["id"]
+                        or result[1]["id"] == user2["id"])
 
         res = self.client.get(f'/notes/1/',
-                            content_type='application/json',
-                            HTTP_AUTHORIZATION=f'Bearer {token}'
-                            )
+                              content_type='application/json',
+                              HTTP_AUTHORIZATION=f'Bearer {token}'
+                              )
         self.assertEquals(res.status_code, 200)
         result = json.loads(res.content)
         self.assertEquals(result["id"], 1)
         self.assertEquals(result["body"], 'body1')
-        self.assertIn('updated', result) # current time
-        self.assertIn('created', result) # current time
+        self.assertIn('updated', result)  # current time
+        self.assertIn('created', result)  # current time
 
     # def test_put_delete_records(self):
     #     token = self.get_token()

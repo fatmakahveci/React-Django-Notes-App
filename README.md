@@ -1,13 +1,14 @@
+# Todo App
+
 ![header.png](header.png)
 
-# Todo App
+---
 
 🎯 A project for learning purposes.
 
 🦦 You can check my [Django](https://fatmakahveci.com/django-note/django/), [React](https://fatmakahveci.com/react-note/react/), [JavaScript](https://fatmakahveci.com/javascript-note/javascript/), and [python](https://fatmakahveci.com/python-note/) notes in my blog.
 
-
-## Installation
+## 1. Installation
 
 ```bash
 # Clone the repository
@@ -34,7 +35,7 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-### Backend development workflow
+## 2. Backend development workflow
 
 ```bash
 cd backend
@@ -48,7 +49,14 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-### Frontend development workflow
+### 3. Tests
+
+```bash
+python manage.py test note_app.tests.tests_jwt
+python manage.py test note_app.tests.tests_notes
+```
+
+## 4. Frontend development workflow
 
 ```bash
 cd frontend
