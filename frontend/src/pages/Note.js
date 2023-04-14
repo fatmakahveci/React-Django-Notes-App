@@ -1,29 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ReactComponent as LeftArrow } from "../assets/left_arrow.svg";
 import axios from "axios";
+import AuthContext from "../context/AuthContext";
 
 const Note = () => {
   let { noteId } = useParams();
   let [note, setNote] = useState(null);
   const navigate = useNavigate();
 
+  let { authTokens } = useContext(AuthContext);
+
   useEffect(() => {
     getNote(noteId);
   }, [noteId]);
+
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + String(authTokens.access)
+    }
+  }
 
   let getNote = async (noteId) => {
     if (noteId === "new") return;
 
     await axios
-      .get(`/notes/${noteId}/`)
+      .get(`/notes/${noteId}/`, config)
       .then((response) => {
         setNote(response.data);
       });
   };
 
   let createNote = async () => {
-    await axios.post("/notes/", note).then((response) => {
+
+    await axios.post("/notes/", note, config).then((response) => {
       setNote(response.data);
       navigate("/notes/");
     });
@@ -32,7 +43,7 @@ const Note = () => {
   let updateNote = async () => {
     if (noteId === "new") return;
 
-    await axios.post(`/notes/${noteId}/`, note).then((response) => {
+    await axios.post(`/notes/${noteId}/`, note, config).then((response) => {
       setNote(response.data);
       navigate("/notes/");
     });
@@ -41,7 +52,7 @@ const Note = () => {
   let deleteNote = async () => {
     if (noteId === "new") return;
 
-    axios.delete(`/notes/${noteId}/`).then((response) => navigate("/notes/"));
+    axios.delete(`/notes/${noteId}/`, config).then((response) => navigate("/notes/"));
   };
 
   let handleSubmit = () => {

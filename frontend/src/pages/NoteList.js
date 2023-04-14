@@ -7,6 +7,7 @@ import AuthContext from "../context/AuthContext";
 const NoteList = () => {
   let [notes, setNotes] = useState([]);
   let { authTokens } = useContext(AuthContext);
+
   useEffect(() => {
     getNotes();
   }, []);
