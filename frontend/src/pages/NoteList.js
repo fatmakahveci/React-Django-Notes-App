@@ -6,18 +6,18 @@ import AuthContext from "../context/AuthContext";
 
 const NoteList = () => {
   let [notes, setNotes] = useState([]);
+
   let { authTokens } = useContext(AuthContext);
-
-  useEffect(() => {
-    getNotes();
-  }, []);
-
   const config = {
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + String(authTokens.access),
     },
   };
+
+  useEffect(() => {
+    getNotes();
+  }, []);
 
   let getNotes = async () => {
     await axios
