@@ -55,6 +55,8 @@ a {
 .container {
   width: 100%;
   height: 100vh;
+  border-left:solid 1px Black;
+  border-right:solid 1px Black;
   color: var(--color-text);
   background-color: var(--color-bg);
   display: flex;
