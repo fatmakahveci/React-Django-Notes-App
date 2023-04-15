@@ -1,6 +1,6 @@
-import './App.css';
 import { useState } from 'react';
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import './App.css';
 
 import { AuthProvider } from './context/AuthContext';
 
@@ -19,7 +19,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-      <div className="container dark">
+      <div className="container root">
         <div className="app">
           <header className="App-header">  
             <AuthProvider> 
