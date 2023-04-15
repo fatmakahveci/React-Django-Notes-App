@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { ReactComponent as LeftArrow } from "../assets/left_arrow.svg";
 import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ReactComponent as LeftArrow } from "../assets/left_arrow.svg";
 import AuthContext from "../context/AuthContext";
 
 const Note = () => {
@@ -49,7 +49,7 @@ const Note = () => {
 
     axios
       .delete(`/notes/${noteId}/`, config)
-      .then((response) => navigate("/notes/"));
+      .then(() => navigate("/notes/"));
   };
 
   let handleSubmit = () => {
@@ -61,6 +61,8 @@ const Note = () => {
       }
     } else if (note !== null) {
       createNote();
+    } else if (note === null) {
+      navigate("/notes/");
     }
   };
 
