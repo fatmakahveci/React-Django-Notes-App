@@ -1,86 +1,105 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-function Register() {
-  const [loginFormData, setloginFormData] = useState({
-    username: "",
-    password: "",
-    password2: "",
-  });
+const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
-  const inputHandler = (e) => {
-    setloginFormData({
-      ...loginFormData,
-      [e.target.name]: e.target.value,
-    });
-  };
+const Register = () => {
+  const userRef = useRef();
+  const errRef = useRef();
 
-  const submitHandler = (e) => {
-    const formData = new FormData();
-    formData.append("username", loginFormData.username);
-    formData.append("password", loginFormData.password);
-    formData.append("password2", loginFormData.password2);
-  };
+  const [user, setUser] = useState("");
+  const [validName, setValidName] = useState(false);
+  const [userFocus, setUserFocus] = useState(false);
 
-  const buttonEnable =
-    loginFormData.username !== "" &&
-    loginFormData.password !== "" &&
-    loginFormData.password2 !== "";
+  const [pwd, setPwd] = useState("");
+  const [validPwd, setValidPwd] = useState(false);
+  const [pwdFocus, setPwdFocus] = useState(false);
+
+  const [matchPwd, setMatchPwd] = useState("");
+  const [validMatch, setValidMatch] = useState(false);
+  const [matchFocus, setMatchFocus] = useState(false);
+
+  const [errMsg, setErrMsg] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const result = USER_REGEX.test(user);
+    console.log(result);
+    console.log(user);
+    setValidName(result);
+  }, [user]);
+
+  useEffect(() => {
+    const result = PWD_REGEX.test(pwd);
+    console.log(result);
+    console.log(pwd);
+    setValidPwd(result);
+    const match = pwd === matchPwd;
+    setValidMatch(match);
+  }, [pwd, matchPwd]);
+
+  useEffect(() => {
+    setErrMsg("");
+  }, [user, pwd, matchPwd]);
 
   return (
-    <div className="wrapper">
+    <div class="wrapper">
+      <h1>Register</h1>
       <form>
-        <div className="form-group">
-          <label htmlFor="username" className="form-label">
+        <div class="row mb-3">
+          <label class="col-sm-5 col-form-label" htmlFor="username">
             Username
           </label>
-          <input
-            type="text"
-            name="username"
-            value={loginFormData.username}
-            onChange={inputHandler}
-            className="form-control"
-            id="username"
-          />
+          <div class="col-sm-7">
+            <input
+              type="text"
+              class="form-control"
+              id="username"
+              name="username"
+              autoComplete="off"
+              required
+              placeholder="Username"
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="pwd" className="form-label">
+        <div class="row mb-3">
+          <label htmlFor="pwd" class="col-sm-5 col-form-label">
             Password
           </label>
-          <input
-            type="text"
-            name="password"
-            value={loginFormData.password}
-            onChange={inputHandler}
-            className="form-control"
-            id="pwd"
-          />
+          <div class="col-sm-7">
+            <input
+              type="text"
+              class="form-control"
+              id="pwd"
+              name="password"
+              autoComplete="off"
+              required
+              placeholder="Password"
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="pwd2" className="form-label">
-            Repeat password
+        <div class="row mb-3">
+          <label htmlFor="pwd2" class="col-sm-5 col-form-label">
+            Re-enter password
           </label>
-          <input
-            type="text"
-            name="password2"
-            value={loginFormData.password2}
-            onChange={inputHandler}
-            className="form-control"
-            id="pwd2"
-          />
+          <div class="col-sm-7">
+            <input
+              type="text"
+              class="form-control"
+              id="pwd2"
+              name="password"
+              autoComplete="off"
+              required
+              placeholder="Password"
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <button
-            type="button"
-            disabled={!buttonEnable}
-            onClick={submitHandler}
-            className="btn btn-success btn-block"
-          >
-            Submit
-          </button>
+        <div class="col-sm-10 offset-sm-2">
+            <button type="submit" class="btn btn-primary">Submit</button>
         </div>
       </form>
     </div>
   );
-}
+};
 
 export default Register;

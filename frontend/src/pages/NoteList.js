@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
-import ListItem from "../components/ListItem";
-import AddButton from "../components/AddButton";
 import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
+import AddButton from "../components/AddButton";
+import ListItem from "../components/ListItem";
 import AuthContext from "../context/AuthContext";
 
 const NoteList = () => {
