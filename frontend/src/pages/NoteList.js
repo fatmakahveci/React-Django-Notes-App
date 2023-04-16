@@ -8,6 +8,7 @@ const NoteList = () => {
   let [notes, setNotes] = useState([]);
 
   let { authTokens } = useContext(AuthContext);
+  
   const config = {
     headers: {
       "Content-Type": "application/json",
