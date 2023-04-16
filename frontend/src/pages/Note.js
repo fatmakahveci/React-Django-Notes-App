@@ -20,6 +20,7 @@ const Note = () => {
   useEffect(() => {
     getNote(noteId);
   }, [noteId]);
+
   let getNote = async (noteId) => {
     if (noteId === "new") return;
 
