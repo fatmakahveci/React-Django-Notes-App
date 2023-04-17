@@ -3,9 +3,6 @@ import jwt_decode from "jwt-decode";
 import { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
-
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -25,6 +22,24 @@ export const AuthProvider = ({ children }) => {
 
   const registerUser = async (e) => {
     e.preventDefault();
+
+    axios.defaults.xsrfCookieName = "csrftoken";
+    axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+
+    await axios.post(
+      "/register",
+      {
+        username: e.target.username.value,
+        password: e.target.password.value,
+        matchPassword: e.target.matchPassword.value,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }
+    ).then(navigate("/notes"));
   };
 
   const loginUser = async (e) => {
@@ -41,6 +56,7 @@ export const AuthProvider = ({ children }) => {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true,
         }
       )
       .then((response) => {
