@@ -17,20 +17,6 @@ def getRoutes(request):
     return Response(routes)
 
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated,])
-def getNotesOrCreateNote(request):
-    if request.method == 'GET':
-        notes = Note.objects.all()
-        serializer = NoteSerializer(notes, many=True)
-        return Response(serializer.data)
-    else:
-        data = request.data
-        note = Note.objects.create(user=request.user, body=data['body'])
-        serializer = NoteSerializer(note, many=False)
-        return Response(serializer.data)
-
-
 @permission_classes([AllowAny,])
 class RegistrationView(APIView):
     def post(self, request):
@@ -41,26 +27,36 @@ class RegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# @permission_classes([IsAuthenticated,])
-# class LoginView(APIView):
-#     def
-@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated,])
-def getOrModifyNote(request, pk):
-    if request.method == 'GET':
+class NoteListView(APIView):
+    def get(self, request):
+        notes = Note.objects.all()
+        serializer = NoteSerializer(notes, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        data = request.data
+        note = Note.objects.create(user=request.user, body=data['body'])
+        serializer = NoteSerializer(note, many=False)
+        return Response(serializer.data)
+
+
+@permission_classes([IsAuthenticated,])
+class NoteDetailView(APIView):
+    def get(self, request, pk):
         note = Note.objects.get(id=pk)
         serializer = NoteSerializer(note, many=False)
         return Response(serializer.data)
-    elif request.method == 'POST':
+
+    def post(self, request, pk):
         data = request.data  # JSON
         note = Note.objects.get(id=pk)
         serializer = NoteSerializer(instance=note, data=data)
         if serializer.is_valid():
             serializer.save()
         return Response(serializer.data)
-    elif request.method == 'DELETE':
+
+    def delete(self, request, pk):
         note = Note.objects.get(id=pk)
         note.delete()
         return Response('Note is deleted.')
-    else:
-        print("throw error here")
