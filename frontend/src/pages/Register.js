@@ -6,6 +6,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
@@ -35,7 +36,7 @@ const Register = () => {
 
   useEffect(() => {
     setValidMatchPwd(pwd === matchPwd);
-  }, [matchPwd]);
+  }, [pwd, matchPwd]);
 
   return (
     <div className="wrapper">
@@ -166,6 +167,9 @@ const Register = () => {
             <button type="submit" className="btn btn-primary">
               Submit
             </button>
+            <span className="register-screen__subtext">
+              &nbsp;&nbsp;&nbsp;Already have an account? <Link to="/login">Login</Link>
+            </span>
           </div>
         </div>
       </form>

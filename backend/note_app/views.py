@@ -3,28 +3,17 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import NoteSerializer, UserSerializer
-from django.contrib.auth.models import User
+from .serializers import NoteSerializer, RegistrationSerializer
 from .models import Note
 
-
-class LoginView(APIView):
-    permission_classes = [AllowAny,]
-
+@permission_classes([AllowAny,])
+class RegistrationView(APIView):
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            if user:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class RegisterView(APIView):
-#     queryset = User.objects.all()
-#     permission_classes = (AllowAny,)
-#     serializer_class = RegisterSerializer
 
 
 @api_view(['GET'])
@@ -32,7 +21,7 @@ def getRoutes(request):
     routes = [
         'token/',
         'token/refresh/',
-        'register/',
+        'register',
     ]
     return Response(routes)
 

@@ -16,8 +16,8 @@ SECRET_KEY = 'django-insecure-52ti8j6mn31u9gg^h(%*2spinev0c1#sdqy*z5hcjq11=igfnb
 DEBUG = True
 
 logging.basicConfig(
-    level = logging.DEBUG,
-    format = '%(asctime)s %(levelname)s %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(message)s',
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -32,10 +32,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'note_app.apps.NoteAppConfig', # new
-    'corsheaders', # new
-    'rest_framework', # new
-    'rest_framework_simplejwt.token_blacklist', # new
+    'note_app.apps.NoteAppConfig',  # new
+    'corsheaders',  # new
+    'rest_framework',  # new
+    'rest_framework_simplejwt.token_blacklist',  # new
 ]
 
 CORS_ORIGIN_WHITELIST = [
@@ -44,11 +44,9 @@ CORS_ORIGIN_WHITELIST = [
     'http://localhost:8080',
 ]
 
-CORS_ALLOW_CREDENTIALS = True # new
+CORS_ALLOW_CREDENTIALS = True  # new
 
-# CORS_ALLOW_ALL_ORIGINS = True # new
-
-CORS_ALLOWED_ORIGINS = [ # new
+CORS_ALLOWED_ORIGINS = [  # new
     "http://localhost:3000",
     "http://localhost:8000",
     "http://localhost:9000",
@@ -88,6 +86,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000/']
 
 DATABASES = {
     'default': {
@@ -131,7 +130,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/') # new
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')  # new
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -143,15 +142,16 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication', 
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
-SIMPLE_JWT = { #
+SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=50),
-    'ROTATE_REFRESH_TOKENS': True, # users don't have to login again within refresh time
+    # users don't have to login again within refresh time
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': False,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
@@ -168,3 +168,7 @@ SIMPLE_JWT = { #
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+)
