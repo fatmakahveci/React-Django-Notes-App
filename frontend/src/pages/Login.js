@@ -16,18 +16,34 @@ const Login = () => {
   const [user, setUser] = useState("");
   const [validName, setValidName] = useState(false);
   const [userFocus, setUserFocus] = useState(false);
-
-  const [pwd, setPwd] = useState("");
-  const [validPwd, setValidPwd] = useState(false);
-  const [pwdFocus, setPwdFocus] = useState(false);
+  const usernameInstruction = `
+    4 to 24 characters.
+    It must begin with a letter.
+    Letters, numbers, underscores, hyphens allowed.`;
 
   useEffect(() => {
     setValidName(USER_REGEX.test(user));
   }, [user]);
 
+  const handleUsernameChange = (e) => {
+    setUser(e.target.value);
+  };
+
+  const [pwd, setPwd] = useState("");
+  const [validPwd, setValidPwd] = useState(false);
+  const [pwdFocus, setPwdFocus] = useState(false);
+  const pwdInstruction = `
+    8 to 24 characters.
+    It must include uppercase and lowercase letters,
+    a number and a special character (!@#$%).`;
+
   useEffect(() => {
     setValidPwd(PWD_REGEX.test(pwd));
   }, [pwd]);
+
+  const handlePwdChange = (e) => {
+    setPwd(e.target.value);
+  };
 
   return (
     <div className="wrapper">
@@ -50,7 +66,7 @@ const Login = () => {
               type="text"
               className="form-control"
               id="username"
-              onChange={(e) => setUser(e.target.value)}
+              onChange={handleUsernameChange}
               value={user}
               name="username"
               autoComplete="off"
@@ -65,12 +81,7 @@ const Login = () => {
               id="uidnote"
               className={userFocus && !validName ? "instructions" : "offscreen"}
             >
-              <FontAwesomeIcon icon={faInfoCircle} />
-              4 to 24 characters.
-              <br />
-              It must begin with a letter.
-              <br />
-              Letters, numbers, underscores, hyphens allowed.
+              <FontAwesomeIcon icon={faInfoCircle} /> {usernameInstruction}
             </p>
           </div>
         </div>
@@ -97,7 +108,7 @@ const Login = () => {
               required
               aria-invalid={validPwd ? "false" : "true"}
               aria-describedby="upassnote"
-              onChange={(e) => setPwd(e.target.value)}
+              onChange={handlePwdChange}
               onFocus={() => setPwdFocus(true)}
               onBlur={() => setPwdFocus(false)}
               placeholder="Password"
@@ -106,11 +117,7 @@ const Login = () => {
               id="pwdnote"
               className={pwdFocus && !validPwd ? "instructions" : "offscreen"}
             >
-              <FontAwesomeIcon icon={faInfoCircle} />
-              8 to 24 characters.
-              <br />
-              It must include uppercase and lowercase letters, a number and a
-              special character (!@#$%).
+              <FontAwesomeIcon icon={faInfoCircle} /> {pwdInstruction}
             </p>
           </div>
         </div>
