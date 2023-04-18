@@ -52,8 +52,8 @@ python manage.py runserver
 ### 3. Tests
 
 ```bash
-python manage.py test note_app.tests.tests_jwt
-python manage.py test note_app.tests.tests_notes
+python manage.py test notes.tests.tests_jwt
+python manage.py test notes.tests.tests_notes
 ```
 
 ## 4. Frontend development workflow

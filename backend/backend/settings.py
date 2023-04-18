@@ -32,8 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'notes.apps.NoteAppConfig',
-    'users.apps.UserAppConfig',
+    'notes.apps.NotesConfig',
+    'users.apps.UsersConfig',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
@@ -112,6 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "users.Author"
 
 # Password hashing
 PASSWORD_HASHERS = [

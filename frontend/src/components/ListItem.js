@@ -6,7 +6,8 @@ const ListItem = ({ note }) => {
     <div>
       <Link to={`/notes/${note.id}/`}>
         <div className="notes-list-item">
-          <h3>{note.body}</h3>
+          <h3>{note.title}</h3>
+          <p>{note.body}</p>
         </div>
       </Link>
     </div>

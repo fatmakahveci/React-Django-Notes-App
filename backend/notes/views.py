@@ -36,7 +36,7 @@ class NoteListView(APIView):
 
     def post(self, request):
         data = request.data
-        note = Note.objects.create(user=request.user, body=data['body'])
+        note = Note.objects.create(author=request.user, body=data['body'])
         serializer = NoteSerializer(note, many=False)
         return Response(serializer.data)
 
