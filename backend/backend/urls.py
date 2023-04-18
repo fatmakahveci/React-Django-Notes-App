@@ -3,5 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('note_app.urls')),  # new - register the app
+    path('', include(('notes.urls','users.urls'))),
 ]
