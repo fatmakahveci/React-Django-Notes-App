@@ -7,26 +7,23 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
 
-const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
+const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
 
 const Login = () => {
   const { loginUser } = useContext(AuthContext);
 
-  const [user, setUser] = useState("");
-  const [validName, setValidName] = useState(false);
-  const [userFocus, setUserFocus] = useState(false);
-  const usernameInstruction = `
-    4 to 24 characters.
-    It must begin with a letter.
-    Letters, numbers, underscores, hyphens allowed.`;
+  const [email, setEmail] = useState("");
+  const [validEmail, setValidEmail] = useState(false);
+  const [emailFocus, setEmailFocus] = useState(false);
+  const emailInstruction = `E-mail is invalid.`;
 
   useEffect(() => {
-    setValidName(USER_REGEX.test(user));
-  }, [user]);
+    setValidEmail(EMAIL_REGEX.test(email));
+  }, [email]);
 
-  const handleUsernameChange = (e) => {
-    setUser(e.target.value);
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
   };
 
   const [pwd, setPwd] = useState("");
@@ -50,38 +47,38 @@ const Login = () => {
       <h1>Login</h1>
       <form onSubmit={loginUser}>
         <div className="row mb-3">
-          <label className="col-sm-5 col-form-label" htmlFor="username">
-            Username
+          <label className="col-sm-5 col-form-label" htmlFor="email">
+            E-mail address
             <FontAwesomeIcon
               icon={faCheck}
-              className={userFocus && validName ? "valid" : "hide"}
+              className={emailFocus && validEmail ? "valid" : "hide"}
             />
             <FontAwesomeIcon
               icon={faTimes}
-              className={userFocus && !validName ? "invalid" : "hide"}
+              className={emailFocus && !validEmail ? "invalid" : "hide"}
             />
           </label>
           <div className="col-sm-7">
             <input
               type="text"
               className="form-control"
-              id="username"
-              onChange={handleUsernameChange}
-              value={user}
-              name="username"
+              id="email"
+              onChange={handleEmailChange}
+              value={email}
+              name="email"
               autoComplete="off"
               required
-              aria-invalid={validName ? "false" : "true"}
+              aria-invalid={validEmail ? "false" : "true"}
               aria-describedby="uidnote"
-              onFocus={() => setUserFocus(true)}
-              onBlur={() => setUserFocus(false)}
-              placeholder="Username"
+              onFocus={() => setEmailFocus(true)}
+              onBlur={() => setEmailFocus(false)}
+              placeholder="E-mail address"
             />
             <p
               id="uidnote"
-              className={userFocus && !validName ? "instructions" : "offscreen"}
+              className={emailFocus && !validEmail ? "instructions" : "offscreen"}
             >
-              <FontAwesomeIcon icon={faInfoCircle} /> {usernameInstruction}
+              <FontAwesomeIcon icon={faInfoCircle} /> {emailInstruction}
             </p>
           </div>
         </div>

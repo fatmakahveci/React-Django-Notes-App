@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     await axios.post(
       "/register",
       {
-        username: e.target.username.value,
+        email: e.target.email.value,
         password: e.target.password.value,
         matchPassword: e.target.matchPassword.value,
       },
@@ -37,9 +37,8 @@ export const AuthProvider = ({ children }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true,
       }
-    ).then(navigate("/notes"));
+    ).then(navigate("/login"));
   };
 
   const loginUser = async (e) => {
@@ -49,7 +48,7 @@ export const AuthProvider = ({ children }) => {
       .post(
         "token/",
         {
-          username: e.target.username.value,
+          email: e.target.email.value,
           password: e.target.password.value,
         },
         {
@@ -71,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     setAuthTokens(null);
     setUser(null);
     localStorage.removeItem("authTokens");
-    navigate("/login");
+    navigate("login/");
   };
 
   const contextData = {
