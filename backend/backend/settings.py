@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'notes.apps.NotesConfig',
-    'users.apps.UsersConfig',
+    'accounts.apps.AccountsConfig',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
@@ -112,8 +112,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = "users.Author"
-
 # Password hashing
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
@@ -169,6 +167,8 @@ SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
+
+AUTH_USER_MODEL = "accounts.CustomUser"
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

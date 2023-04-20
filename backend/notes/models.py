@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import Author
+from accounts.models import CustomUser
 import datetime
 
 
@@ -9,7 +9,7 @@ def getTitleDefault():
 
 class Note(models.Model):
     author = models.ForeignKey(
-        to=Author, on_delete=models.CASCADE, related_name='notes')
+        to=CustomUser, on_delete=models.CASCADE, related_name='notes')
     title = models.CharField(max_length=20, blank=True,
                              default=getTitleDefault)
     body = models.TextField(null=True, blank=True)

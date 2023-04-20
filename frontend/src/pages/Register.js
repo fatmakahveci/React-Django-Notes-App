@@ -8,78 +8,90 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
-const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
+const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
 
 const Register = () => {
   const { registerUser } = useContext(AuthContext);
 
-  const [user, setUser] = useState("");
-  const [validName, setValidName] = useState(false);
-  const [userFocus, setUserFocus] = useState(false);
+  const [email, setEmail] = useState("");
+  const [validEmail, setValidEmail] = useState(false);
+  const [emailFocus, setEmailFocus] = useState(false);
+  const emailInstruction = `E-mail is invalid.`;
+
+  useEffect(() => {
+    setValidEmail(EMAIL_REGEX.test(email));
+  }, [email]);
+  
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
 
   const [pwd, setPwd] = useState("");
   const [validPwd, setValidPwd] = useState(false);
   const [pwdFocus, setPwdFocus] = useState(false);
+  const pwdInstruction = `
+    8 to 24 characters.
+    It must include uppercase and lowercase letters,
+    a number and a special character (!@#$%).`;
+
+  useEffect(() => {
+    setValidPwd(PWD_REGEX.test(pwd));
+  }, [pwd]);
+
+  const handlePwdChange = (e) => {
+    setPwd(e.target.value);
+  };
 
   const [matchPwd, setMatchPwd] = useState("");
   const [validMatchPwd, setValidMatchPwd] = useState(false);
   const [matchPwdFocus, setMatchPwdFocus] = useState(false);
 
   useEffect(() => {
-    setValidName(USER_REGEX.test(user));
-  }, [user]);
-
-  useEffect(() => {
-    setValidPwd(PWD_REGEX.test(pwd));
-  }, [pwd]);
-
-  useEffect(() => {
     setValidMatchPwd(pwd === matchPwd);
   }, [pwd, matchPwd]);
+
+  const handleMatchPwdChange = (e) => {
+    setMatchPwd(e.target.value);
+  };
 
   return (
     <div className="wrapper">
       <h1>Register</h1>
       <form onSubmit={registerUser}>
         <div className="row mb-3">
-          <label className="col-sm-5 col-form-label" htmlFor="username">
-            Username
+          <label className="col-sm-5 col-form-label" htmlFor="Email">
+            E-mail address
             <FontAwesomeIcon
               icon={faCheck}
-              className={userFocus && validName ? "valid" : "hide"}
+              className={emailFocus && validEmail ? "valid" : "hide"}
             />
             <FontAwesomeIcon
               icon={faTimes}
-              className={userFocus && !validName ? "invalid" : "hide"}
+              className={emailFocus && !validEmail ? "invalid" : "hide"}
             />
           </label>
           <div className="col-sm-7">
             <input
               type="text"
               className="form-control"
-              id="username"
-              onChange={(e) => setUser(e.target.value)}
-              value={user}
-              name="username"
+              id="email"
+              onChange={handleEmailChange}
+              value={email}
+              name="email"
               autoComplete="off"
               required
-              aria-invalid={validName ? "false" : "true"}
+              aria-invalid={validEmail ? "false" : "true"}
               aria-describedby="uidnote"
-              onFocus={() => setUserFocus(true)}
-              onBlur={() => setUserFocus(false)}
-              placeholder="Username"
+              onFocus={() => setEmailFocus(true)}
+              onBlur={() => setEmailFocus(false)}
+              placeholder="Email"
             />
             <p
               id="uidnote"
-              className={userFocus && !validName ? "instructions" : "offscreen"}
+              className={emailFocus && !validEmail ? "instructions" : "offscreen"}
             >
-              <FontAwesomeIcon icon={faInfoCircle} />
-              4 to 24 characters.
-              <br />
-              It must begin with a letter.
-              <br />
-              Letters, numbers, underscores, hyphens allowed.
+              <FontAwesomeIcon icon={faInfoCircle} />{emailInstruction}
             </p>
           </div>
         </div>
@@ -106,7 +118,7 @@ const Register = () => {
               required
               aria-invalid={validPwd ? "false" : "true"}
               aria-describedby="upassnote"
-              onChange={(e) => setPwd(e.target.value)}
+              onChange={handlePwdChange}
               onFocus={() => setPwdFocus(true)}
               onBlur={() => setPwdFocus(false)}
               placeholder="Password"
@@ -115,11 +127,7 @@ const Register = () => {
               id="pwdnote"
               className={pwdFocus && !validPwd ? "instructions" : "offscreen"}
             >
-              <FontAwesomeIcon icon={faInfoCircle} />
-              8 to 24 characters.
-              <br />
-              It must include uppercase and lowercase letters, a number and a
-              special character (!@#$%).
+              <FontAwesomeIcon icon={faInfoCircle} />{pwdInstruction}
             </p>
           </div>
         </div>
@@ -146,7 +154,7 @@ const Register = () => {
               required
               aria-invalid={validMatchPwd ? "false" : "true"}
               aria-describedby="umatchpwdnote"
-              onChange={(e) => setMatchPwd(e.target.value)}
+              onChange={handleMatchPwdChange}
               onFocus={() => setMatchPwdFocus(true)}
               onBlur={() => setMatchPwdFocus(false)}
               placeholder="Re-enter password"
