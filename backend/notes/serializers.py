@@ -3,7 +3,7 @@ from .models import Note
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    user = serializers.ReadOnlyField(source='user.user_name')
 
     class Meta:
         model = Note

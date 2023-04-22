@@ -8,7 +8,7 @@ def getTitleDefault():
 
 
 class Note(models.Model):
-    author = models.ForeignKey(
+    user = models.ForeignKey(
         to=CustomUser, on_delete=models.CASCADE, related_name='notes')
     title = models.CharField(max_length=20, blank=True,
                              default=getTitleDefault)

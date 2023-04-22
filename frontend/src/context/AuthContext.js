@@ -26,19 +26,22 @@ export const AuthProvider = ({ children }) => {
     axios.defaults.xsrfCookieName = "csrftoken";
     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 
-    await axios.post(
-      "/register",
-      {
-        email: e.target.email.value,
-        password: e.target.password.value,
-        matchPassword: e.target.matchPassword.value,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
+    await axios
+      .post(
+        "/register",
+        {
+          user_name: e.target.user_name.value,
+          email: e.target.email.value,
+          password: e.target.password.value,
+          match_password: e.target.match_password.value,
         },
-      }
-    ).then(navigate("/login"));
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then(navigate("/login"));
   };
 
   const loginUser = async (e) => {

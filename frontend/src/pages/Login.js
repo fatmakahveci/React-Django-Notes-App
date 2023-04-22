@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
 
-const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
 
 const Login = () => {
@@ -76,7 +76,9 @@ const Login = () => {
             />
             <p
               id="uidnote"
-              className={emailFocus && !validEmail ? "instructions" : "offscreen"}
+              className={
+                emailFocus && !validEmail ? "instructions" : "offscreen"
+              }
             >
               <FontAwesomeIcon icon={faInfoCircle} /> {emailInstruction}
             </p>
