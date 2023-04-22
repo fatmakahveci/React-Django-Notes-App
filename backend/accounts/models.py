@@ -5,14 +5,14 @@ from .managers import CustomUserManager
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    email = models.CharField(max_length=40, unique=True)
-
+    email = models.CharField(max_length=50, unique=True)
+    user_name = models.CharField(max_length=50, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['user_name']
 
     objects = CustomUserManager()
 

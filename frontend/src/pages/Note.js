@@ -48,9 +48,7 @@ const Note = () => {
   let deleteNote = async () => {
     if (noteId === "new") return;
 
-    axios
-      .delete(`/notes/${noteId}/`, config)
-      .then(() => navigate("/notes/"));
+    axios.delete(`/notes/${noteId}/`, config).then(() => navigate("/notes/"));
   };
 
   let handleSubmit = () => {

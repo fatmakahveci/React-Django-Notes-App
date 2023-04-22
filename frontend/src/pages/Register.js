@@ -8,6 +8,7 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
+const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
 
@@ -22,9 +23,25 @@ const Register = () => {
   useEffect(() => {
     setValidEmail(EMAIL_REGEX.test(email));
   }, [email]);
-  
+
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
+  };
+
+  const [user_name, setUserName] = useState("");
+  const [validUserName, setValidUserName] = useState(false);
+  const [userNameFocus, setUserNameFocus] = useState(false);
+  const userNameInstruction = `
+  4 to 24 characters.
+  It must begin with a letter.
+  Letters, numbers, underscores, hyphens allowed.`;
+
+  useEffect(() => {
+    setValidUserName(USERNAME_REGEX.test(user_name));
+  }, [user_name]);
+
+  const handleUserNameChange = (e) => {
+    setUserName(e.target.value);
   };
 
   const [pwd, setPwd] = useState("");
@@ -60,7 +77,46 @@ const Register = () => {
       <h1>Register</h1>
       <form onSubmit={registerUser}>
         <div className="row mb-3">
-          <label className="col-sm-5 col-form-label" htmlFor="Email">
+          <label className="col-sm-5 col-form-label" htmlFor="username">
+            Username
+            <FontAwesomeIcon
+              icon={faCheck}
+              className={userNameFocus && validUserName ? "valid" : "hide"}
+            />
+            <FontAwesomeIcon
+              icon={faTimes}
+              className={userNameFocus && !validUserName ? "invalid" : "hide"}
+            />
+          </label>
+          <div className="col-sm-7">
+            <input
+              type="text"
+              className="form-control"
+              id="user_name"
+              onChange={handleUserNameChange}
+              value={user_name}
+              name="user_name"
+              autoComplete="off"
+              required
+              aria-invalid={validUserName ? "false" : "true"}
+              aria-describedby="usernamenote"
+              onFocus={() => setUserNameFocus(true)}
+              onBlur={() => setUserNameFocus(false)}
+              placeholder="Username"
+            />
+            <p
+              id="usernamenote"
+              className={
+                userNameFocus && !validUserName ? "instructions" : "offscreen"
+              }
+            >
+              <FontAwesomeIcon icon={faInfoCircle} />
+              {userNameInstruction}
+            </p>
+          </div>
+        </div>
+        <div className="row mb-3">
+          <label className="col-sm-5 col-form-label" htmlFor="email">
             E-mail address
             <FontAwesomeIcon
               icon={faCheck}
@@ -85,13 +141,16 @@ const Register = () => {
               aria-describedby="uidnote"
               onFocus={() => setEmailFocus(true)}
               onBlur={() => setEmailFocus(false)}
-              placeholder="Email"
+              placeholder="E-mail address"
             />
             <p
               id="uidnote"
-              className={emailFocus && !validEmail ? "instructions" : "offscreen"}
+              className={
+                emailFocus && !validEmail ? "instructions" : "offscreen"
+              }
             >
-              <FontAwesomeIcon icon={faInfoCircle} />{emailInstruction}
+              <FontAwesomeIcon icon={faInfoCircle} />
+              {emailInstruction}
             </p>
           </div>
         </div>
@@ -127,7 +186,8 @@ const Register = () => {
               id="pwdnote"
               className={pwdFocus && !validPwd ? "instructions" : "offscreen"}
             >
-              <FontAwesomeIcon icon={faInfoCircle} />{pwdInstruction}
+              <FontAwesomeIcon icon={faInfoCircle} />
+              {pwdInstruction}
             </p>
           </div>
         </div>
@@ -149,7 +209,7 @@ const Register = () => {
               className="form-control"
               id="matchPwd"
               value={matchPwd}
-              name="matchPassword"
+              name="match_password"
               autoComplete="off"
               required
               aria-invalid={validMatchPwd ? "false" : "true"}
@@ -176,7 +236,8 @@ const Register = () => {
               Submit
             </button>
             <span className="register-screen__subtext">
-              &nbsp;&nbsp;&nbsp;Already have an account? <Link to="/login">Login</Link>
+              &nbsp;&nbsp;&nbsp;Already have an account?{" "}
+              <Link to="/login">Login</Link>
             </span>
           </div>
         </div>
