@@ -5,6 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 
 const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(.\w{2,3})+$/;
@@ -125,6 +126,10 @@ const Login = () => {
             <button type="submit" className="btn btn-primary">
               Submit
             </button>
+            <span className="register-screen__subtext">
+              &nbsp;&nbsp;&nbsp;Don't you have an account?{" "}
+              <NavLink to="/register">Register</NavLink>
+            </span>
           </div>
         </div>
       </form>
