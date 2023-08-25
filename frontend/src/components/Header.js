@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 
 const Header = ({ setIsLoggedIn }) => {
@@ -15,17 +15,13 @@ const Header = ({ setIsLoggedIn }) => {
   if (user) {
     return (
       <div className="app-header">
-        <Link to="/">Home</Link>
-        <Link to="/notes/">Notes</Link>
+        <NavLink to="/notes/">Notes</NavLink>
         <p onClick={logoutUser}>Logout</p>
       </div>
     );
   } else {
     return (
       <div className="app-header">
-        <Link to="/">Home</Link>
-        <Link to="/register">Register</Link>
-        <Link to="/login">Login</Link>
       </div>
     );
   }

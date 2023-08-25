@@ -10,9 +10,7 @@ import PageNotFound from "./utils/PageNotFound";
 import Note from "./pages/Note";
 import NoteList from "./pages/NoteList";
 
-import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -25,17 +23,17 @@ function App() {
             <Header setIsLoggedIn={setIsLoggedIn} />
             <Routes>
               <Route path="*" element={<PageNotFound />} />
-              <Route exact path="/" element={<Home />} />
-              <Route exact path="/register" element={<Register />} />
+              <Route exact path="/" element={<Login />} />
               {isLoggedIn ? (
                 <>
+                  <Route exact path="/" element={<NoteList />} />
                   <Route exact path="/notes/" element={<NoteList />} />
                   <Route path="/notes/:noteId/" element={<Note />} />
                 </>
               ) : (
                 <>
                   <Route
-                    path="/login"
+                    path="/login/"
                     element={<Login setIsLoggedIn={setIsLoggedIn} />}
                   />
                 </>

@@ -6,7 +6,6 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
-import { Link } from "react-router-dom";
 
 const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -228,17 +227,6 @@ const Register = () => {
               <FontAwesomeIcon icon={faInfoCircle} />
               Passwords don't match.
             </p>
-          </div>
-        </div>
-        <div className="form-group">
-          <div className="col-sm-offset-2 col-sm-10">
-            <button type="submit" className="btn btn-primary">
-              Submit
-            </button>
-            <span className="register-screen__subtext">
-              &nbsp;&nbsp;&nbsp;Already have an account?{" "}
-              <Link to="/login">Login</Link>
-            </span>
           </div>
         </div>
       </form>
