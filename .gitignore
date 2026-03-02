@@ -291,3 +291,20 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# Django
+db.sqlite3
+media/
+
+# Node
+node_modules/
+build/
+
+# Mac
+.DS_Store
