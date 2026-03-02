@@ -8,7 +8,7 @@ const NewNoteButton = () => {
 	return (
 		<button
 			className="newnote-btn"
-			onClick={() => navigate("/notes/new/")}
+			onClick={() => navigate("/notes/new")}
 			title="Create note"
 		>
 			<AddIcon />

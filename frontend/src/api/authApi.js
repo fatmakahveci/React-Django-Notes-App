@@ -1,69 +1,68 @@
-import api from "./axios";
+import axios from "axios";
 
-/**
- * Creates an authenticated axios client that:
- * - attaches the access token on every request
- * - refreshes the access token on 401 once, then retries the original request
- *
- * You must pass:
- * - authTokens: { access, refresh }
- * - setAuthTokens: function to update tokens in state
- * - logoutUser: function to log out (optional but recommended)
- * - refreshPath: refresh endpoint path (default: "/api/token/refresh/")
- */
-export const createAuthApi = ({
+export function createAuthApi({
 	authTokens,
 	setAuthTokens,
 	logoutUser,
 	refreshPath = "/api/accounts/token/refresh/",
-}) => {
-	const authApi = api;
+}) {
+	const instance = axios.create({
+		baseURL: "http://127.0.0.1:8000",
+		headers: { "Content-Type": "application/json" },
+	});
 
-	authApi.interceptors.request.use(
+	instance.interceptors.request.use(
 		(config) => {
-			if (authTokens?.access) {
-				config.headers.Authorization = `Bearer ${authTokens.access}`;
+			const access = authTokens?.access;
+			if (access) {
+				config.headers = config.headers || {};
+				config.headers.Authorization = `Bearer ${access}`;
 			}
 			return config;
 		},
 		(error) => Promise.reject(error),
 	);
 
-	authApi.interceptors.response.use(
+	instance.interceptors.response.use(
 		(response) => response,
 		async (error) => {
 			const originalRequest = error.config;
 
-			if (error.response?.status === 401 && !originalRequest?._retry) {
-				originalRequest._retry = true;
+			if (!error.response) return Promise.reject(error);
+			if (error.response.status !== 401) return Promise.reject(error);
 
-				try {
-					const refresh = authTokens?.refresh;
-					if (!refresh) throw new Error("Missing refresh token");
+			if (originalRequest._retry) {
+				logoutUser?.();
+				return Promise.reject(error);
+			}
+			originalRequest._retry = true;
 
-					const res = await api.post(refreshPath, { refresh });
-					const newAccess = res.data?.access;
-					if (!newAccess)
-						throw new Error("Refresh did not return access token");
-
-					const newTokens = { ...authTokens, access: newAccess };
-					setAuthTokens(newTokens);
-					localStorage.setItem(
-						"authTokens",
-						JSON.stringify(newTokens),
-					);
-
-					originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-					return authApi(originalRequest);
-				} catch (refreshErr) {
-					logoutUser?.();
-					return Promise.reject(refreshErr);
-				}
+			const refresh = authTokens?.refresh;
+			if (!refresh) {
+				logoutUser?.();
+				return Promise.reject(error);
 			}
 
-			return Promise.reject(error);
+			try {
+				const refreshRes = await axios.post(
+					`http://127.0.0.1:8000${refreshPath}`,
+					{ refresh },
+					{ headers: { "Content-Type": "application/json" } },
+				);
+
+				const newTokens = { ...authTokens, ...refreshRes.data };
+				setAuthTokens(newTokens);
+
+				originalRequest.headers = originalRequest.headers || {};
+				originalRequest.headers.Authorization = `Bearer ${newTokens.access}`;
+
+				return instance(originalRequest);
+			} catch (refreshErr) {
+				logoutUser?.();
+				return Promise.reject(refreshErr);
+			}
 		},
 	);
 
-	return authApi;
-};
+	return instance;
+}

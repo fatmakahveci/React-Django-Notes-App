@@ -4,14 +4,15 @@ import { ReactComponent as LeftArrow } from "../assets/left_arrow.svg";
 import AuthContext from "../context/AuthContext";
 import { createAuthApi } from "../api/authApi";
 import "./note-editor.css";
+import api from "../api/axios";
 
 const AUTOSAVE_DELAY_MS = 800;
 
 const Note = () => {
-	const { noteId: rawNoteId } = useParams();
-	const noteId = (rawNoteId ?? "").replaceAll("/", "");
-
+	const params = useParams();
+	const noteId = params.noteId ?? "new";
 	const navigate = useNavigate();
+
 	const { authTokens, setAuthTokens, logoutUser } = useContext(AuthContext);
 
 	const [note, setNote] = useState({ body: "" });
@@ -25,7 +26,6 @@ const Note = () => {
 			setAuthTokens,
 			logoutUser,
 			refreshPath: "/api/accounts/token/refresh/",
-			
 		});
 	}, [authTokens, setAuthTokens, logoutUser]);
 
@@ -43,19 +43,30 @@ const Note = () => {
 		);
 	};
 
+	const setHttpError = (prefix, err) => {
+		const status = err?.response?.status;
+		const detail =
+			err?.response?.data?.detail ||
+			err?.response?.data?.message ||
+			err?.message ||
+			"";
+		setError(
+			status
+				? `${prefix} (HTTP ${status}). ${detail}`
+				: `${prefix}. ${detail}`,
+		);
+	};
+
 	useEffect(() => {
 		if (!authTokens?.access) {
 			navigate("/login", { replace: true });
 			return;
 		}
-
 		if (!noteId) return;
 
 		const fetchNote = async () => {
 			setError("");
 			setSaveState("idle");
-
-			if (!noteId) return;
 
 			if (noteId === "new") {
 				setLoading(false);
@@ -70,8 +81,8 @@ const Note = () => {
 				const res = await authApi.get(`/api/notes/${noteId}/`);
 				setNote(res.data);
 				lastSavedBodyRef.current = (res.data?.body ?? "").toString();
-			} catch {
-				setError("Failed to load note.");
+			} catch (err) {
+				setHttpError("Failed to load note", err);
 			} finally {
 				setLoading(false);
 				isFirstLoadRef.current = false;
@@ -89,11 +100,18 @@ const Note = () => {
 	}, [noteId, authTokens, navigate, authApi]);
 
 	const createNote = async (body) => {
+		console.log("CREATE -> POST /api/notes/", { body });
 		setSaveState("saving");
 		setError("");
 
 		try {
-			const res = await authApi.post("/api/notes/", { body: body ?? "" });
+			const res = await api.post(
+				"/api/notes/",
+				{ body: body ?? "" },
+				{
+					headers: { Authorization: `Bearer ${authTokens?.access}` },
+				},
+			);
 			const created = res.data;
 
 			setNote(created);
@@ -102,61 +120,51 @@ const Note = () => {
 			setSaveState("saved");
 			showSavedTemporarily();
 
-			// Robust id detection (some serializers use id, some pk)
-			const newId = created?.id ?? created?.pk;
-
-			if (newId) {
-				navigate(`/notes/${newId}`, { replace: true });
-			} else {
-				// If API didn't return an id, go back to list
-				navigate("/notes", { replace: true });
-			}
+			navigate(`/notes/${created.id}`, { replace: true });
 		} catch (err) {
-			setSaveState("error");
-			const status = err?.response?.status;
-			const detail =
-				err?.response?.data?.detail ||
-				err?.response?.data?.message ||
-				err?.message;
-
-			setError(
-				status
-					? `Save failed (HTTP ${status}). ${detail ?? ""}`
-					: `Save failed. ${detail ?? ""}`,
+			console.log(
+				"CREATE ERROR",
+				err?.response?.status,
+				err?.response?.data,
+				err?.message,
 			);
+
+			setSaveState("error");
+			setHttpError("Failed to create note", err);
 		}
 	};
 
 	const updateNote = async (id, body) => {
+		console.log("UPDATE -> POST /api/notes/:id/", { id, body });
 		if (!id || id === "new") return;
 
 		setSaveState("saving");
 		setError("");
 
 		try {
-			const payload = { body: body ?? "" };
-
-			const res = await authApi.post(`/api/notes/${id}/`, payload);
-
+			const res = await api.post(
+				`/api/notes/${id}/`,
+				{ body: body ?? "" },
+				{
+					headers: { Authorization: `Bearer ${authTokens?.access}` },
+				},
+			);
 			const updated = res.data ?? { ...note, body };
+
 			setNote(updated);
 			lastSavedBodyRef.current = (updated?.body ?? body ?? "").toString();
 
 			setSaveState("saved");
 			showSavedTemporarily();
 		} catch (err) {
-			setSaveState("error");
-			const status = err?.response?.status;
-			const detail =
-				err?.response?.data?.detail ||
-				err?.response?.data?.message ||
-				err?.message;
-
-			setError(
-				status
-					? `Save failed (HTTP ${status}). ${detail ?? ""}`
-					: `Save failed. ${detail ?? ""}`,
+			console.log(
+				"UPDATE ERROR",
+				err?.response?.status,
+				err?.response?.data,
+				err?.message,
 			);
+			setSaveState("error");
+			setHttpError("Failed to update note", err);
 		}
 	};
 
@@ -172,9 +180,9 @@ const Note = () => {
 		try {
 			await authApi.delete(`/api/notes/${noteId}/`);
 			navigate("/notes");
-		} catch {
+		} catch (err) {
 			setSaveState("error");
-			setError("Failed to delete note.");
+			setHttpError("Failed to delete note", err);
 		}
 	};
 
@@ -184,15 +192,13 @@ const Note = () => {
 		if (isFirstLoadRef.current) return;
 
 		const body = (note?.body ?? "").toString();
-		const trimmed = body.trim();
-
 		if (body === lastSavedBodyRef.current) return;
 
-		if (noteId === "new" && trimmed.length === 0) {
-			setSaveState("idle");
-			return;
+		if (noteId === "new") {
+			if (body.trim().length > 0) createNote(body);
+		} else {
+			updateNote(noteId, body);
 		}
-
 		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
 
 		autosaveTimerRef.current = setTimeout(() => {
@@ -207,6 +213,17 @@ const Note = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [note?.body, noteId, loading]);
 
+	const handleSaveNow = async () => {
+		const body = (note?.body ?? "").trim();
+		if (!body) return;
+
+		if (noteId === "new") {
+			await createNote(body);
+		} else {
+			await updateNote(noteId, body);
+		}
+	};
+
 	const handleBack = () => {
 		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
 		navigate("/notes");
@@ -218,16 +235,19 @@ const Note = () => {
 		<div className="ne-page">
 			<div className="ne-shell">
 				<header className="ne-header">
-					<button
-						type="button"
-						className="ne-iconBtn"
-						onClick={handleBack}
-						disabled={loading}
-						aria-label="Back"
-						title="Back"
-					>
-						<LeftArrow className="ne-icon" />
-					</button>
+					<div className="ne-left">
+						<button
+							type="button"
+							className="ne-iconBtn"
+							onClick={handleBack}
+							disabled={loading}
+							aria-label="Back"
+							title="Back"
+						>
+							<LeftArrow className="ne-icon" />
+						</button>
+						<h2 className="ne-titleText">Notes</h2>
+					</div>
 
 					<div className="ne-headerRight">
 						<span
@@ -248,35 +268,46 @@ const Note = () => {
 										: ""}
 						</span>
 
-						{noteId !== "new" && noteId ? (
+						<button
+							type="button"
+							className="ne-btn ne-primaryBtn"
+							onClick={handleSaveNow}
+							disabled={busy}
+						>
+							Save
+						</button>
+
+						{noteId !== "new" && (
 							<button
 								type="button"
-								className="ne-dangerBtn"
+								className="ne-btn ne-dangerBtn"
 								onClick={deleteNote}
 								disabled={busy}
 							>
 								Delete
 							</button>
-						) : null}
+						)}
 					</div>
 				</header>
 
 				{error ? <div className="ne-alert">{error}</div> : null}
 
 				<main className="ne-card">
-					<textarea
-						className="ne-textarea"
-						autoFocus
-						disabled={loading}
-						placeholder="Start typing..."
-						value={note?.body ?? ""}
-						onChange={(e) =>
-							setNote((prev) => ({
-								...prev,
-								body: e.target.value,
-							}))
-						}
-					/>
+					<div className="ne-cardInner">
+						<textarea
+							className="ne-textarea"
+							autoFocus
+							disabled={loading}
+							placeholder="Start typing..."
+							value={note?.body ?? ""}
+							onChange={(e) =>
+								setNote((prev) => ({
+									...prev,
+									body: e.target.value,
+								}))
+							}
+						/>
+					</div>
 				</main>
 			</div>
 		</div>
