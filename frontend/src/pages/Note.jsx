@@ -25,6 +25,7 @@ const Note = () => {
 			setAuthTokens,
 			logoutUser,
 			refreshPath: "/api/accounts/token/refresh/",
+			
 		});
 	}, [authTokens, setAuthTokens, logoutUser]);
 

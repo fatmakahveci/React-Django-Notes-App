@@ -21,9 +21,8 @@ export const createAuthApi = ({
 
 	authApi.interceptors.request.use(
 		(config) => {
-			const access = authTokens?.access;
-			if (access) {
-				config.headers.Authorization = `Bearer ${access}`;
+			if (authTokens?.access) {
+				config.headers.Authorization = `Bearer ${authTokens.access}`;
 			}
 			return config;
 		},
