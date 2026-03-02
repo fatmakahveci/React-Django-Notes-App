@@ -1,233 +1,73 @@
-# React + Django Notes App
+![CI](https://github.com/YOUR_USERNAME/react-django-notes-app/actions/workflows/ci.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/YOUR_USERNAME/react-django-notes-app)
 
-A full-stack notes application built with **Django REST Framework** and **React** featuring authentication, autosaving notes, and JWT authorization.
+# Getting Started with Create React App
 
-Users can register, sign in securely, and create notes that automatically save while typing — similar to modern note apps (Notion/Keep style).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
----
+## Available Scripts
 
-## ✨ Features
+In the project directory, you can run:
 
-- JWT auth (access + refresh)
-- Register / login / logout
-- Protected routes
-- Notes CRUD
-- Autosave while typing
-- Search notes
-- Responsive UI
+### `npm start`
 
----
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-## 🧱 Tech Stack
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-**Backend:** Django, DRF, SimpleJWT  
-**Frontend:** React 18, React Router v6, Axios  
-**Dev DB:** SQLite (prod-ready for Postgres)
+### `npm test`
 
----
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-## 📁 Project Structure
+### `npm run build`
 
-```
-React-Django-Notes-App
-│
-├── backend/
-│   ├── accounts/
-│   ├── notes/
-│   ├── config/
-│   └── manage.py
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── App.js
-│   └── package.json
-│
-└── README.md
-```
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
----
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-# 🚀 Local Development Setup
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-## 1. Clone
+### `npm run eject`
 
-```
-git clone https://github.com/YOUR_USERNAME/React-Django-Notes-App.git
-cd React-Django-Notes-App
-```
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
----
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-## 2. Backend Setup (Django)
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-```
-cd backend
-python -m venv .venv
-source .venv/bin/activate   # Mac/Linux
-# .venv\Scripts\activate    # Windows
-pip install -r requirements.txt
-python manage.py migrate
-```
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-Create superuser (optional):
+## Learn More
 
-```
-python manage.py createsuperuser
-```
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-Start server:
+To learn React, check out the [React documentation](https://reactjs.org/).
 
-```
-python manage.py runserver
-```
+### Code Splitting
 
-Backend runs at:
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-```
-http://127.0.0.1:8000
-```
+### Analyzing the Bundle Size
 
----
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-## 3. Frontend Setup (React)
+### Making a Progressive Web App
 
-Open new terminal:
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-```
-cd frontend
-npm install
-npm start
-```
+### Advanced Configuration
 
-Frontend runs at:
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-```
-http://localhost:3000
-```
+### Deployment
 
----
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-# 🔐 Authentication Flow
+### `npm run build` fails to minify
 
-The app uses **JWT tokens**.
-
-1. User logs in
-2. Backend returns:
-    - access token (short lived)
-    - refresh token (long lived)
-
-3. React automatically refreshes tokens
-4. User stays logged in
-
-No cookies are used — only Authorization headers.
-
----
-
-# 📡 API Endpoints
-
-## Auth
-
-| Method | Endpoint                       | Description          |
-| ------ | ------------------------------ | -------------------- |
-| POST   | `/api/accounts/register/`      | Create user          |
-| POST   | `/api/accounts/token/`         | Login                |
-| POST   | `/api/accounts/token/refresh/` | Refresh access token |
-
----
-
-## Notes
-
-| Method | Endpoint           | Description |
-| ------ | ------------------ | ----------- |
-| GET    | `/api/notes/`      | List notes  |
-| POST   | `/api/notes/`      | Create note |
-| GET    | `/api/notes/<id>/` | Get note    |
-| POST   | `/api/notes/<id>/` | Update note |
-| DELETE | `/api/notes/<id>/` | Delete note |
-
-All note endpoints require:
-
-```
-Authorization: Bearer <access_token>
-```
-
----
-
-# ⚙️ Environment Variables
-
-Create:
-
-```
-backend/.env
-```
-
-Example:
-
-```
-SECRET_KEY=django-secret
-DEBUG=True
-ALLOWED_HOSTS=127.0.0.1,localhost
-```
-
----
-
-# 🧠 Autosave Logic
-
-The editor works like this:
-
-- Typing triggers a delayed save (700ms)
-- First save creates the note
-- Future saves update the same note
-- No page reload
-- Enter/new lines preserved
-
----
-
-# 🧪 Running Tests
-
-Backend:
-
-```
-cd backend
-python manage.py test
-```
-
-Frontend:
-
-```
-cd frontend
-npm test
-```
-
----
-
-# 🏗 Deployment (Production Idea)
-
-Recommended:
-
-- Backend → Render / Railway / Fly.io
-- Frontend → Vercel / Netlify
-- Database → PostgreSQL
-
-Remember to change:
-
-```
-DEBUG=False
-ALLOWED_HOSTS=<domain>
-```
-
----
-
-# 📄 License
-
-MIT License
-
----
-
-# 👤 Author
-
-Fatma Kahveci
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
