@@ -4,13 +4,13 @@ import { ReactComponent as LeftArrow } from "../assets/left_arrow.svg";
 import AuthContext from "../context/AuthContext";
 import { createAuthApi } from "../api/authApi";
 import "./note-editor.css";
-import api from "../api/axios";
 
-const AUTOSAVE_DELAY_MS = 800;
+const AUTOSAVE_DELAY_MS = 700;
 
 const Note = () => {
 	const params = useParams();
-	const noteId = params.noteId ?? "new";
+	const noteIdFromRoute = params.noteId; // "new" does NOT exist here; new is a separate route
+	const isNewRoute = !noteIdFromRoute; // /notes/new has no param
 	const navigate = useNavigate();
 
 	const { authTokens, setAuthTokens, logoutUser } = useContext(AuthContext);
@@ -19,6 +19,9 @@ const Note = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [saveState, setSaveState] = useState("idle"); // idle | saving | saved | error
+
+	// For /notes/new: we store created note id here and continue updating without navigation
+	const [draftId, setDraftId] = useState(null);
 
 	const authApi = useMemo(() => {
 		return createAuthApi({
@@ -39,7 +42,7 @@ const Note = () => {
 			clearTimeout(savedBadgeTimerRef.current);
 		savedBadgeTimerRef.current = setTimeout(
 			() => setSaveState("idle"),
-			1500,
+			1200,
 		);
 	};
 
@@ -57,28 +60,28 @@ const Note = () => {
 		);
 	};
 
+	// Load note for edit route
 	useEffect(() => {
-		if (!authTokens?.access) {
-			navigate("/login", { replace: true });
+		setError("");
+		setSaveState("idle");
+
+		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+		if (savedBadgeTimerRef.current)
+			clearTimeout(savedBadgeTimerRef.current);
+
+		if (isNewRoute) {
+			setLoading(false);
+			setNote({ body: "" });
+			setDraftId(null);
+			lastSavedBodyRef.current = "";
+			isFirstLoadRef.current = false;
 			return;
 		}
-		if (!noteId) return;
 
 		const fetchNote = async () => {
-			setError("");
-			setSaveState("idle");
-
-			if (noteId === "new") {
-				setLoading(false);
-				setNote({ body: "" });
-				lastSavedBodyRef.current = "";
-				isFirstLoadRef.current = false;
-				return;
-			}
-
 			setLoading(true);
 			try {
-				const res = await authApi.get(`/api/notes/${noteId}/`);
+				const res = await authApi.get(`/api/notes/${noteIdFromRoute}/`);
 				setNote(res.data);
 				lastSavedBodyRef.current = (res.data?.body ?? "").toString();
 			} catch (err) {
@@ -97,58 +100,40 @@ const Note = () => {
 			if (savedBadgeTimerRef.current)
 				clearTimeout(savedBadgeTimerRef.current);
 		};
-	}, [noteId, authTokens, navigate, authApi]);
+	}, [isNewRoute, noteIdFromRoute, authApi]);
 
 	const createNote = async (body) => {
-		console.log("CREATE -> POST /api/notes/", { body });
 		setSaveState("saving");
 		setError("");
 
 		try {
-			const res = await api.post(
-				"/api/notes/",
-				{ body: body ?? "" },
-				{
-					headers: { Authorization: `Bearer ${authTokens?.access}` },
-				},
-			);
+			const res = await authApi.post("/api/notes/", { body: body ?? "" });
 			const created = res.data;
 
 			setNote(created);
 			lastSavedBodyRef.current = (created?.body ?? "").toString();
 
+			// IMPORTANT: do not navigate (prevents focus loss / Enter issues)
+			if (created?.id) setDraftId(String(created.id));
+
 			setSaveState("saved");
 			showSavedTemporarily();
-
-			navigate(`/notes/${created.id}`, { replace: true });
 		} catch (err) {
-			console.log(
-				"CREATE ERROR",
-				err?.response?.status,
-				err?.response?.data,
-				err?.message,
-			);
-
 			setSaveState("error");
 			setHttpError("Failed to create note", err);
 		}
 	};
 
 	const updateNote = async (id, body) => {
-		console.log("UPDATE -> POST /api/notes/:id/", { id, body });
-		if (!id || id === "new") return;
+		if (!id) return;
 
 		setSaveState("saving");
 		setError("");
 
 		try {
-			const res = await api.post(
-				`/api/notes/${id}/`,
-				{ body: body ?? "" },
-				{
-					headers: { Authorization: `Bearer ${authTokens?.access}` },
-				},
-			);
+			const res = await authApi.post(`/api/notes/${id}/`, {
+				body: body ?? "",
+			});
 			const updated = res.data ?? { ...note, body };
 
 			setNote(updated);
@@ -157,19 +142,14 @@ const Note = () => {
 			setSaveState("saved");
 			showSavedTemporarily();
 		} catch (err) {
-			console.log(
-				"UPDATE ERROR",
-				err?.response?.status,
-				err?.response?.data,
-				err?.message,
-			);
 			setSaveState("error");
 			setHttpError("Failed to update note", err);
 		}
 	};
 
 	const deleteNote = async () => {
-		if (!noteId || noteId === "new") {
+		const idToDelete = isNewRoute ? draftId : noteIdFromRoute;
+		if (!idToDelete) {
 			navigate("/notes");
 			return;
 		}
@@ -178,7 +158,7 @@ const Note = () => {
 		setError("");
 
 		try {
-			await authApi.delete(`/api/notes/${noteId}/`);
+			await authApi.delete(`/api/notes/${idToDelete}/`);
 			navigate("/notes");
 		} catch (err) {
 			setSaveState("error");
@@ -186,24 +166,29 @@ const Note = () => {
 		}
 	};
 
+	// Autosave (create once on /notes/new, then update using draftId)
 	useEffect(() => {
-		if (!noteId) return;
 		if (loading) return;
 		if (isFirstLoadRef.current) return;
 
 		const body = (note?.body ?? "").toString();
+		const trimmed = body.trim();
+
 		if (body === lastSavedBodyRef.current) return;
 
-		if (noteId === "new") {
-			if (body.trim().length > 0) createNote(body);
-		} else {
-			updateNote(noteId, body);
+		// no empty note creation
+		if (trimmed.length === 0) {
+			setSaveState("idle");
+			return;
 		}
+
 		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
 
 		autosaveTimerRef.current = setTimeout(() => {
-			if (noteId === "new") createNote(body);
-			else updateNote(noteId, body);
+			const idToUpdate = isNewRoute ? draftId : noteIdFromRoute;
+
+			if (!idToUpdate) createNote(body);
+			else updateNote(idToUpdate, body);
 		}, AUTOSAVE_DELAY_MS);
 
 		return () => {
@@ -211,21 +196,16 @@ const Note = () => {
 				clearTimeout(autosaveTimerRef.current);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [note?.body, noteId, loading]);
-
-	const handleSaveNow = async () => {
-		const body = (note?.body ?? "").trim();
-		if (!body) return;
-
-		if (noteId === "new") {
-			await createNote(body);
-		} else {
-			await updateNote(noteId, body);
-		}
-	};
+	}, [note?.body, draftId, isNewRoute, loading]);
 
 	const handleBack = () => {
 		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+
+		// Optional: if draft exists, go to its real URL
+		if (isNewRoute && draftId) {
+			navigate(`/notes/${draftId}`, { replace: true });
+			return;
+		}
 		navigate("/notes");
 	};
 
@@ -270,23 +250,12 @@ const Note = () => {
 
 						<button
 							type="button"
-							className="ne-btn ne-primaryBtn"
-							onClick={handleSaveNow}
+							className="ne-btn ne-dangerBtn"
+							onClick={deleteNote}
 							disabled={busy}
 						>
-							Save
+							Delete
 						</button>
-
-						{noteId !== "new" && (
-							<button
-								type="button"
-								className="ne-btn ne-dangerBtn"
-								onClick={deleteNote}
-								disabled={busy}
-							>
-								Delete
-							</button>
-						)}
 					</div>
 				</header>
 

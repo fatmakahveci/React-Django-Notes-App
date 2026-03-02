@@ -4,7 +4,11 @@ import { ReactComponent as Add } from "../assets/add.svg";
 
 const AddButton = () => {
 	return (
-		<NavLink to="/notes/new" className="floating-button">
+		<NavLink
+			to="/notes/new"
+			className="floating-button"
+			aria-label="Add note"
+		>
 			<Add />
 		</NavLink>
 	);

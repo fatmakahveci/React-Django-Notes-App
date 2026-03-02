@@ -13,16 +13,23 @@
 .login-card {
     width: 100%;
     max-width: 420px;
-    background: white;
+    background: #ffffff;
     padding: 34px 32px 28px;
     border-radius: 18px;
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
 }
 
-.login-brand {
+.login-brandLink {
+    display: inline-block;
     font-weight: 900;
     font-size: 20px;
     margin-bottom: 10px;
+    color: #111827;
+    text-decoration: none;
+}
+
+.login-brandLink:hover {
+    opacity: 0.8;
 }
 
 .login-title {
@@ -30,6 +37,7 @@
     font-size: 28px;
     font-weight: 900;
     letter-spacing: -0.02em;
+    color: #111827;
 }
 
 .login-subtitle {
@@ -45,7 +53,7 @@
     padding: 10px 12px;
     border-radius: 12px;
     margin-bottom: 14px;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .login-form {
@@ -56,7 +64,7 @@
 
 .login-field label {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
     color: #374151;
     display: block;
     margin-bottom: 6px;
@@ -78,14 +86,21 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
+.login-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #b45309;
+}
+
 .login-button {
     margin-top: 6px;
     height: 46px;
     border-radius: 12px;
     border: none;
     background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    font-weight: 800;
+    color: #ffffff;
+    font-weight: 900;
     cursor: pointer;
     transition: transform 0.12s ease, filter 0.12s ease;
 }
@@ -95,59 +110,39 @@
     filter: brightness(1.05);
 }
 
+.login-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+}
+
 .login-footer {
     margin-top: 18px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 650;
     color: #6b7280;
 }
 
 .login-footer a {
     color: #2563eb;
     text-decoration: none;
-    font-weight: 700;
-}
-
-.login-hint {
-    margin-top: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: rgba(15, 23, 42, 0.6);
-}
-
-.login-hint {
-    margin-top: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #b45309;
-}
-
-fieldset:disabled {
-    opacity: 0.75;
-    pointer-events: none;
+    font-weight: 800;
 }
 
 .login-homeLink {
     display: inline-block;
-    margin-top: 6px;
+    margin-top: 10px;
     color: #2563eb;
     text-decoration: none;
-    font-weight: 800;
+    font-weight: 900;
 }
 
 .login-homeLink:hover {
     text-decoration: underline;
 }
 
-.login-brandLink {
-    display: inline-block;
-    font-weight: 900;
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #111827;
-    text-decoration: none;
-}
-
-.login-brandLink:hover {
+fieldset:disabled {
     opacity: 0.75;
+    pointer-events: none;
 }
