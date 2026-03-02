@@ -8,13 +8,12 @@ const Layout = () => {
 	const { logoutUser } = useContext(AuthContext);
 
 	return (
-		<div className="app">
+		<div className="app-layout">
 			<header className="app-navbar">
 				<div className="nav-left">
 					<Link to="/notes" className="brand">
 						Notes
 					</Link>
-					
 				</div>
 
 				<div className="nav-right">

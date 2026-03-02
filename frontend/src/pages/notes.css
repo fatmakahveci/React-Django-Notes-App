@@ -1,0 +1,106 @@
+.nl-page {
+    min-height: calc(100vh - 0px);
+    background: #f3f4f6;
+    padding: 24px 14px;
+}
+
+.nl-shell {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.nl-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.nl-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 900;
+    color: #111827;
+}
+
+.nl-subtitle {
+    margin: 6px 0 0;
+    color: #6b7280;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.nl-searchWrap {
+    width: min(420px, 100%);
+}
+
+.nl-search {
+    width: 100%;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 0 12px;
+    font-weight: 700;
+    outline: none;
+    background: #fff;
+}
+
+.nl-search:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.nl-alert {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.18);
+    color: #b91c1c;
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-weight: 800;
+    margin: 12px 0;
+}
+
+.nl-loading {
+    color: #6b7280;
+    font-weight: 800;
+    margin: 8px 0 10px;
+}
+
+.nl-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+@media (max-width: 760px) {
+    .nl-top {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .nl-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.nl-empty {
+    grid-column: 1 / -1;
+    background: #fff;
+    border: 1px dashed #d1d5db;
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+}
+
+.nl-emptyTitle {
+    font-weight: 900;
+    color: #111827;
+    font-size: 16px;
+}
+
+.nl-emptyText {
+    margin-top: 6px;
+    color: #6b7280;
+    font-weight: 700;
+}

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { useContext } from "react";
 import "./App.css";
 
@@ -6,16 +6,16 @@ import { AuthProvider } from "./context/AuthContext";
 import AuthContext from "./context/AuthContext";
 
 import Landing from "./pages/Landing";
-import Login from "./pages/Login";
 import Layout from "./components/Layout";
+import Login from "./pages/Login";
 import Note from "./pages/Note";
 import NoteList from "./pages/NoteList";
 import PageNotFound from "./utils/PageNotFound";
 import Register from "./pages/Register";
 
-function PrivateRoute({ children }) {
+function PrivateRoute() {
 	const { authTokens } = useContext(AuthContext);
-	return authTokens?.access ? children : <Navigate to="/login" replace />;
+	return authTokens?.access ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 function AppRoutes() {
@@ -26,24 +26,21 @@ function AppRoutes() {
 			<Route path="/login" element={<Login />} />
 			<Route path="/register" element={<Register />} />
 
-			{/* Private app under /notes */}
-			<Route
-				path="/notes"
-				element={
-					<PrivateRoute>
-						<Layout />
-					</PrivateRoute>
-				}
-			>
-				<Route index element={<NoteList />} />
-				<Route path="new" element={<Note />} />
-				<Route path=":noteId" element={<Note />} />
+			{/* Protected layout route */}
+			<Route element={<PrivateRoute />}>
+				<Route element={<Layout />}>
+					<Route path="/notes" element={<NoteList />} />
+					<Route
+						path="/notes/new"
+						element={<Note key="new" isNew />}
+					/>
+					<Route
+						path="/notes/:noteId"
+						element={<Note key="edit" />}
+					/>
+				</Route>
 			</Route>
 
-			{/* Convenience redirect */}
-			<Route path="/app" element={<Navigate to="/notes" replace />} />
-
-			{/* 404 */}
 			<Route path="*" element={<PageNotFound />} />
 		</Routes>
 	);
