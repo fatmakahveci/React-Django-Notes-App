@@ -5,22 +5,22 @@
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 18px;
-    padding: 14px;
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.06);
+    padding: 16px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
     transition: transform 0.12s ease, box-shadow 0.12s ease;
-    min-height: 110px;
+    min-height: 96px;
 }
 
 .li-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.12);
 }
 
 .li-titleRow {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 8px;
 }
 
@@ -46,7 +46,7 @@
     font-size: 13px;
     line-height: 1.45;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
