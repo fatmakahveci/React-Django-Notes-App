@@ -1,0 +1,27 @@
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.save-indicator {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.8;
+  user-select: none;
+  min-width: 86px;
+  text-align: right;
+}
+
+.save-indicator.is-saving {
+  opacity: 0.9;
+}
+
+.save-indicator.is-saved {
+  opacity: 0.85;
+}
+
+.save-indicator.is-error {
+  opacity: 1;
+  color: #b91c1c;
+}

@@ -1,92 +1,193 @@
-import axios from "axios";
-import jwt_decode from "jwt-decode";
-import { createContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+	createContext,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
+import api from "../api/axios";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+
+const TOKEN_URL = "/api/accounts/token/";
+const REFRESH_URL = "/api/accounts/token/refresh/";
+const REGISTER_URL = "/api/accounts/register/";
+
+const decodeJwtPayload = (token) => {
+	try {
+		const payload = token.split(".")[1];
+		const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+		const json = decodeURIComponent(
+			atob(base64)
+				.split("")
+				.map(
+					(c) =>
+						`%${("00" + c.charCodeAt(0).toString(16)).slice(-2)}`,
+				)
+				.join(""),
+		);
+		return JSON.parse(json);
+	} catch {
+		return null;
+	}
+};
 
 export const AuthProvider = ({ children }) => {
-  const [authTokens, setAuthTokens] = useState(
-    localStorage.getItem("authTokens")
-      ? JSON.parse(localStorage.getItem("authTokens"))
-      : null
-  );
+	const [authTokens, setAuthTokens] = useState(() => {
+		const stored = localStorage.getItem("authTokens");
+		return stored ? JSON.parse(stored) : null;
+	});
 
-  const [user, setUser] = useState(
-    localStorage.getItem("user")
-      ? jwt_decode(localStorage.getItem("user"))
-      : null
-  );
+	const [user, setUser] = useState(() => {
+		const stored = localStorage.getItem("authTokens");
+		if (!stored) return null;
+		const tokens = JSON.parse(stored);
+		const payload = tokens?.access ? decodeJwtPayload(tokens.access) : null;
+		return payload || null;
+	});
 
-  const navigate = useNavigate();
+	const [loadingAuth, setLoadingAuth] = useState(true);
+	const [authError, setAuthError] = useState("");
 
-  const registerUser = async (e) => {
-    e.preventDefault();
+	const persistTokens = useCallback((tokens) => {
+		setAuthTokens(tokens);
+		localStorage.setItem("authTokens", JSON.stringify(tokens));
+		const payload = tokens?.access ? decodeJwtPayload(tokens.access) : null;
+		setUser(payload || null);
+	}, []);
 
-    axios.defaults.xsrfCookieName = "csrftoken";
-    axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+	const clearAuth = useCallback(() => {
+		setAuthTokens(null);
+		setUser(null);
+		localStorage.removeItem("authTokens");
+	}, []);
 
-    await axios
-      .post(
-        "/register",
-        {
-          user_name: e.target.user_name.value,
-          email: e.target.email.value,
-          password: e.target.password.value,
-          match_password: e.target.match_password.value,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then(navigate("/login"));
-  };
+	const logoutUser = useCallback(() => {
+		clearAuth();
+	}, [clearAuth]);
 
-  const loginUser = async (e) => {
-    e.preventDefault();
+	const loginUser = useCallback(
+		async (e) => {
+			e.preventDefault();
+			setAuthError("");
 
-    await axios
-      .post(
-        "token/",
-        {
-          email: e.target.email.value,
-          password: e.target.password.value,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      )
-      .then((response) => {
-        setAuthTokens(response.data);
-        setUser(jwt_decode(response.data.access));
-        localStorage.setItem("authTokens", JSON.stringify(response.data));
-        navigate("/");
-      });
-  };
+			const email = e.target.email.value;
+			const password = e.target.password.value;
 
-  const logoutUser = () => {
-    setAuthTokens(null);
-    setUser(null);
-    localStorage.removeItem("authTokens");
-    navigate("login/");
-  };
+			try {
+				const res = await api.post(TOKEN_URL, { email, password });
+				// Expected: { access, refresh }
+				persistTokens(res.data);
+			} catch (err) {
+				clearAuth();
+				setAuthError("Login failed. Check your email and password.");
+			}
+		},
+		[persistTokens, clearAuth],
+	);
 
-  const contextData = {
-    user: user,
-    authTokens: authTokens,
-    loginUser: loginUser,
-    registerUser: registerUser,
-    logoutUser: logoutUser,
-  };
+	const registerUser = useCallback(
+		async ({ email, user_name, password, match_password }) => {
+			try {
+				await api.post(REGISTER_URL, {
+					email,
+					user_name,
+					password,
+					match_password,
+				});
+				return { ok: true };
+			} catch (err) {
+				const msg =
+					err?.response?.data?.email?.[0] ||
+					err?.response?.data?.user_name?.[0] ||
+					err?.response?.data?.password?.[0] ||
+					err?.response?.data?.match_password?.[0] ||
+					err?.response?.data?.detail ||
+					"Registration failed.";
+				return { ok: false, error: String(msg) };
+			}
+		},
+		[],
+	);
 
-  return (
-    <AuthContext.Provider value={contextData}>{children}</AuthContext.Provider>
-  );
+	const refreshAccessToken = useCallback(async () => {
+		const refresh = authTokens?.refresh;
+		if (!refresh) {
+			clearAuth();
+			return false;
+		}
+
+		try {
+			const res = await api.post(REFRESH_URL, { refresh });
+
+			// Some setups rotate refresh tokens; keep it if the API returns it
+			const newTokens = {
+				...authTokens,
+				...res.data, // usually { access } or { access, refresh }
+			};
+
+			persistTokens(newTokens);
+			return true;
+		} catch {
+			clearAuth();
+			return false;
+		}
+	}, [authTokens, persistTokens, clearAuth]);
+
+	// On app start: if we have tokens, refresh once to ensure we don't log out quickly
+	useEffect(() => {
+		const init = async () => {
+			if (authTokens?.refresh) {
+				await refreshAccessToken();
+			}
+			setLoadingAuth(false);
+		};
+		init();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// Refresh periodically (prevents “kicked out after a short time”)
+	useEffect(() => {
+		if (!authTokens?.refresh) return;
+
+		const interval = setInterval(
+			() => {
+				refreshAccessToken();
+			},
+			1000 * 60 * 4,
+		); // every 4 minutes
+
+		return () => clearInterval(interval);
+	}, [authTokens, refreshAccessToken]);
+
+	const contextValue = useMemo(
+		() => ({
+			user,
+			authTokens,
+			setAuthTokens: persistTokens, // keep a setter-like API
+			loginUser,
+			logoutUser,
+			registerUser,
+			authError,
+			loadingAuth,
+		}),
+		[
+			user,
+			authTokens,
+			persistTokens,
+			loginUser,
+			logoutUser,
+			registerUser,
+			authError,
+			loadingAuth,
+		],
+	);
+
+	return (
+		<AuthContext.Provider value={contextValue}>
+			{children}
+		</AuthContext.Provider>
+	);
 };
 
 export default AuthContext;

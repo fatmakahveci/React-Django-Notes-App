@@ -1,49 +1,58 @@
-import { useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useContext } from "react";
 import "./App.css";
 
 import { AuthProvider } from "./context/AuthContext";
+import AuthContext from "./context/AuthContext";
 
-import Header from "./components/Header";
-import PageNotFound from "./utils/PageNotFound";
-
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Layout from "./components/Layout";
 import Note from "./pages/Note";
 import NoteList from "./pages/NoteList";
+import PageNotFound from "./utils/PageNotFound";
+import Register from "./pages/Register";
 
-import Login from "./pages/Login";
-
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  return (
-    <div className="container root">
-      <div className="app">
-        <header className="App-header">
-          <AuthProvider>
-            <Header setIsLoggedIn={setIsLoggedIn} />
-            <Routes>
-              <Route path="*" element={<PageNotFound />} />
-              <Route exact path="/" element={<Login />} />
-              {isLoggedIn ? (
-                <>
-                  <Route exact path="/" element={<NoteList />} />
-                  <Route exact path="/notes/" element={<NoteList />} />
-                  <Route path="/notes/:noteId/" element={<Note />} />
-                </>
-              ) : (
-                <>
-                  <Route
-                    path="/login/"
-                    element={<Login setIsLoggedIn={setIsLoggedIn} />}
-                  />
-                </>
-              )}
-            </Routes>
-          </AuthProvider>
-        </header>
-      </div>
-    </div>
-  );
+function PrivateRoute({ children }) {
+	const { authTokens } = useContext(AuthContext);
+	return authTokens?.access ? children : <Navigate to="/login" replace />;
 }
 
-export default App;
+function AppRoutes() {
+	return (
+		<Routes>
+			{/* Public */}
+			<Route path="/" element={<Landing />} />
+			<Route path="/login" element={<Login />} />
+			<Route path="/register" element={<Register />} />
+
+			{/* Private app under /notes */}
+			<Route
+				path="/notes"
+				element={
+					<PrivateRoute>
+						<Layout />
+					</PrivateRoute>
+				}
+			>
+				<Route index element={<NoteList />} />
+				<Route path="new" element={<Note />} />
+				<Route path=":noteId" element={<Note />} />
+			</Route>
+
+			{/* Convenience redirect */}
+			<Route path="/app" element={<Navigate to="/notes" replace />} />
+
+			{/* 404 */}
+			<Route path="*" element={<PageNotFound />} />
+		</Routes>
+	);
+}
+
+export default function App() {
+	return (
+		<AuthProvider>
+			<AppRoutes />
+		</AuthProvider>
+	);
+}
