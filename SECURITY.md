@@ -27,6 +27,8 @@ Bildirim incelenene kadar erişim tokenlarını, gerçek kullanıcı verilerini 
 - `DJANGO_ALLOWED_HOSTS`, CORS ve CSRF listelerini gerçek alan adlarıyla
   sınırlandırın.
 - Uygulama ve API trafiğini HTTPS üzerinden sunun.
+- HSTS preload kullanmadan önce tüm alt alan adlarının HTTPS desteklediğini
+  doğrulayın; gerekirse ilgili ortam değişkenini kapatın.
 - Veritabanı parolalarını ve tokenları depoya commit etmeyin.
 - Bağımlılık ve güvenlik taramalarını düzenli çalıştırın.
 

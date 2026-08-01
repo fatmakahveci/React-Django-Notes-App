@@ -1,48 +1,43 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Redirect, Route, Switch } from "wouter";
 import "./App.css";
 
 import { AuthProvider } from "./context/AuthContext";
-
+import Layout from "./components/Layout";
+import PrivateRoute from "./components/PrivateRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Layout from "./components/Layout";
 import Note from "./pages/Note";
 import NoteList from "./pages/NoteList";
+import Register from "./pages/Register";
 import PageNotFound from "./utils/PageNotFound";
 
-import PrivateRoute from "./components/PrivateRoute";
+const ProtectedPage = ({ children }) => (
+	<PrivateRoute>
+		<Layout>{children}</Layout>
+	</PrivateRoute>
+);
 
 function AppRoutes() {
 	return (
-		<Routes>
-			{/* Public */}
-			<Route path="/" element={<Landing />} />
-			<Route path="/login" element={<Login />} />
-			<Route path="/register" element={<Register />} />
-
-			{/* Protected */}
-			<Route element={<PrivateRoute />}>
-				<Route element={<Layout />}>
-					<Route path="/notes" element={<NoteList />} />
-					<Route path="/notes/new" element={<Note />} />
-					<Route path="/notes/:noteId" element={<Note />} />
-				</Route>
+		<Switch>
+			<Route path="/" component={Landing} />
+			<Route path="/login" component={Login} />
+			<Route path="/register" component={Register} />
+			<Route path="/notes">
+				<ProtectedPage><NoteList /></ProtectedPage>
 			</Route>
-
-			{/* Convenience */}
-			<Route path="/app" element={<Navigate to="/notes" replace />} />
-
-			{/* 404 */}
-			<Route path="*" element={<PageNotFound />} />
-		</Routes>
+			<Route path="/notes/new">
+				<ProtectedPage><Note /></ProtectedPage>
+			</Route>
+			<Route path="/notes/:noteId">
+				<ProtectedPage><Note /></ProtectedPage>
+			</Route>
+			<Route path="/app"><Redirect to="/notes" replace /></Route>
+			<Route><PageNotFound /></Route>
+		</Switch>
 	);
 }
 
 export default function App() {
-	return (
-		<AuthProvider>
-			<AppRoutes />
-		</AuthProvider>
-	);
+	return <AuthProvider><AppRoutes /></AuthProvider>;
 }

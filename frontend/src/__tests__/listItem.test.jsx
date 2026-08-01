@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import ListItem from "../components/ListItem";
+import TestRouter from "../testRouter";
 
 const renderItem = (note) =>
 	render(
-		<MemoryRouter>
+		<TestRouter>
 			<ListItem note={note} />
-		</MemoryRouter>,
+		</TestRouter>,
 	);
 
 test("uses the first body line when the title is generated automatically", () => {

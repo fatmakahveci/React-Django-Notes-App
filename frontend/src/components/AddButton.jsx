@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "../router";
 import Add from "../assets/add.svg?react";
 
 const AddButton = () => {

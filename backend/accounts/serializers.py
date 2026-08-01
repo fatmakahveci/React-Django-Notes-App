@@ -26,7 +26,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs['password'] != attrs['match_password']:
             raise serializers.ValidationError(
-                {'password': 'Passwords must match.'})
+                {'password': 'Passwords must match.'})  # nosec B105: validation text
         try:
             validate_password(attrs['password'])
         except DjangoValidationError as error:

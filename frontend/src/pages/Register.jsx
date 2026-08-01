@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "../router";
 import AuthContext from "../context/AuthContext";
 import "./login.css";
 
@@ -66,7 +66,7 @@ const Register = () => {
 		}
 
 		// Success → go to login with email prefilled
-		navigate("/login", { replace: true, state: { email } });
+		navigate(`/login?email=${encodeURIComponent(email)}`, { replace: true });
 	};
 
 	return (
