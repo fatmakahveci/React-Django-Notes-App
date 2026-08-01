@@ -26,9 +26,6 @@ class NotesAPITests(TestCase):
             format="json",
         )
         self.assertEqual(token_res.status_code, 200, token_res.data)
-        self.access = token_res.data["access"]
-
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access}")
         self.user = CustomUser.objects.get(email="notes@example.com")
 
     def test_notes_crud(self):
@@ -41,8 +38,8 @@ class NotesAPITests(TestCase):
         # List
         r = self.client.get("/api/notes/")
         self.assertEqual(r.status_code, 200)
-        self.assertTrue(isinstance(r.data, list))
-        self.assertGreaterEqual(len(r.data), 1)
+        self.assertGreaterEqual(r.data["count"], 1)
+        self.assertGreaterEqual(len(r.data["results"]), 1)
 
         # Detail
         r = self.client.get(f"/api/notes/{note_id}/")
@@ -86,9 +83,6 @@ class NotesAPITests(TestCase):
             {"email": "other@example.com", "password": "StrongPass1!"},
             format="json",
         )
-        other_client.credentials(
-            HTTP_AUTHORIZATION=f"Bearer {token_response.data['access']}"
-        )
 
         self.assertEqual(other_client.get(f"/api/notes/{note.id}/").status_code, 404)
         self.assertEqual(other_client.patch(
@@ -127,7 +121,10 @@ class NotesAPITests(TestCase):
         response = self.client.get("/api/notes/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([item["id"] for item in response.data], [newer.id, older.id])
+        self.assertEqual(
+            [item["id"] for item in response.data["results"]],
+            [newer.id, older.id],
+        )
 
     def test_put_replaces_editable_fields(self):
         note = Note.objects.create(user=self.user, title="Before", body="old")
@@ -146,3 +143,28 @@ class NotesAPITests(TestCase):
         note = Note.objects.create(user=self.user)
 
         self.assertRegex(note.title, r"^Note of \d{2} [A-Z][a-z]{2}, \d{4}$")
+
+    def test_search_matches_title_and_body(self):
+        Note.objects.create(user=self.user, title="Project Aurora", body="planning")
+        Note.objects.create(user=self.user, title="Shopping", body="coffee beans")
+        Note.objects.create(user=self.user, title="Unrelated", body="nothing here")
+
+        title_response = self.client.get("/api/notes/?search=aurora")
+        body_response = self.client.get("/api/notes/?search=coffee")
+
+        self.assertEqual(title_response.data["count"], 1)
+        self.assertEqual(title_response.data["results"][0]["title"], "Project Aurora")
+        self.assertEqual(body_response.data["count"], 1)
+        self.assertEqual(body_response.data["results"][0]["title"], "Shopping")
+
+    def test_pagination_limits_page_size(self):
+        Note.objects.bulk_create(
+            [Note(user=self.user, title=f"Note {index}") for index in range(13)]
+        )
+
+        first_page = self.client.get("/api/notes/")
+        second_page = self.client.get("/api/notes/?page=2")
+
+        self.assertEqual(first_page.data["count"], 13)
+        self.assertEqual(len(first_page.data["results"]), 12)
+        self.assertEqual(len(second_page.data["results"]), 1)

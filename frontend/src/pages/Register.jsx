@@ -79,7 +79,7 @@ const Register = () => {
 				<h1 className="login-title">Create your account</h1>
 				<p className="login-subtitle">Start writing in seconds</p>
 
-				{error && <div className="login-error">{error}</div>}
+				{error && <div className="login-error" role="alert">{error}</div>}
 
 				<form onSubmit={handleSubmit} className="login-form">
 					<fieldset
@@ -87,8 +87,9 @@ const Register = () => {
 						style={{ border: 0, padding: 0, margin: 0 }}
 					>
 						<div className="login-field">
-							<label>Username</label>
+							<label htmlFor="register-username">Username</label>
 							<input
+								id="register-username"
 								type="text"
 								placeholder="yourname"
 								value={userName}
@@ -104,8 +105,9 @@ const Register = () => {
 						</div>
 
 						<div className="login-field">
-							<label>Email</label>
+							<label htmlFor="register-email">Email</label>
 							<input
+								id="register-email"
 								type="email"
 								placeholder="you@example.com"
 								value={email}
@@ -120,8 +122,9 @@ const Register = () => {
 						</div>
 
 						<div className="login-field">
-							<label>Password</label>
+							<label htmlFor="register-password">Password</label>
 							<input
+								id="register-password"
 								type="password"
 								placeholder="At least 8 characters"
 								autoComplete="new-password"
@@ -138,8 +141,9 @@ const Register = () => {
 						</div>
 
 						<div className="login-field">
-							<label>Confirm password</label>
+							<label htmlFor="register-password-confirm">Confirm password</label>
 							<input
+								id="register-password-confirm"
 								type="password"
 								placeholder="Repeat password"
 								value={matchPwd}

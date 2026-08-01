@@ -104,3 +104,27 @@
     color: #6b7280;
     font-weight: 700;
 }
+
+.nl-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 18px;
+    color: #4b5563;
+    font-weight: 700;
+}
+
+.nl-pagination button {
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #fff;
+    padding: 8px 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.nl-pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}

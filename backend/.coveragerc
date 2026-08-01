@@ -1,0 +1,10 @@
+[run]
+source = accounts,notes,config
+omit =
+    */migrations/*
+    */tests.py
+
+[report]
+fail_under = 90
+show_missing = True
+skip_covered = True

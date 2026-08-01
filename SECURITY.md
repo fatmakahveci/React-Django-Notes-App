@@ -1,40 +1,40 @@
-# Güvenlik Politikası
+# Security Policy
 
-## Desteklenen sürüm
+## Supported version
 
-Güvenlik güncellemeleri yalnızca `main` branch'in en güncel hali için sağlanır.
-Eski commitler ve kişisel forklar ayrıca desteklenmez.
+Security updates are provided for the latest revision of the `main` branch.
+Older commits and personal forks are not supported separately.
 
-## Güvenlik açığı bildirme
+## Reporting a vulnerability
 
-Bir güvenlik açığını herkese açık issue olarak paylaşmayın. Depodaki
-[özel güvenlik bildirimi](https://github.com/fatmakahveci/React-Django-Notes-App/security/advisories/new)
-üzerinden aşağıdaki bilgileri gönderin:
+Do not disclose vulnerabilities through a public issue. Submit a
+[private security advisory](https://github.com/fatmakahveci/React-Django-Notes-App/security/advisories/new)
+with the following information:
 
-- Etkilenen endpoint, bileşen veya commit
-- Açığın yeniden üretim adımları
-- Beklenen ve gözlenen davranış
-- Olası etkisi
-- Varsa örnek istek, yanıt veya düzeltme önerisi
+- Affected endpoint, component, or commit
+- Steps to reproduce the issue
+- Expected and observed behavior
+- Potential impact
+- Example requests, responses, or suggested fixes when available
 
-Bildirim incelenene kadar erişim tokenlarını, gerçek kullanıcı verilerini veya
-çalışan sistemlere ait gizli bilgileri eklemeyin.
+Do not include active access tokens, real user data, or secrets from running
+systems while the report is being reviewed.
 
-## Güvenli dağıtım gereksinimleri
+## Secure deployment requirements
 
-- `DJANGO_DEBUG=false` kullanın.
-- Uzun ve rastgele bir `DJANGO_SECRET_KEY` tanımlayın.
-- `DJANGO_ALLOWED_HOSTS`, CORS ve CSRF listelerini gerçek alan adlarıyla
-  sınırlandırın.
-- Uygulama ve API trafiğini HTTPS üzerinden sunun.
-- HSTS preload kullanmadan önce tüm alt alan adlarının HTTPS desteklediğini
-  doğrulayın; gerekirse ilgili ortam değişkenini kapatın.
-- Veritabanı parolalarını ve tokenları depoya commit etmeyin.
-- Bağımlılık ve güvenlik taramalarını düzenli çalıştırın.
+- Set `DJANGO_DEBUG=false`.
+- Provide a long, random `DJANGO_SECRET_KEY`.
+- Restrict `DJANGO_ALLOWED_HOSTS`, CORS, and CSRF lists to real deployment domains.
+- Serve all application and API traffic over HTTPS.
+- Verify that every subdomain supports HTTPS before enabling HSTS preload.
+- Never commit database passwords, tokens, or other secrets.
+- Run dependency and static security scans regularly.
 
-## Kimlik doğrulama notları
+## Authentication notes
 
-Not endpointleri JWT doğrulaması gerektirir ve sorgular aktif kullanıcıya göre
-filtrelenir. Frontend tokenları `localStorage` içinde tutar; bu nedenle dağıtımda
-güçlü bir Content Security Policy kullanılması ve XSS risklerinin dikkatle
-yönetilmesi önerilir.
+Note endpoints require JWT authentication and restrict all queries to the active
+user. Access and refresh tokens are stored in Secure, HttpOnly cookies in
+production and are never exposed to frontend JavaScript. Unsafe cookie-authenticated
+requests require Django CSRF validation. Keep the frontend and API origin lists
+strictly scoped, maintain a strong Content Security Policy, and treat XSS
+prevention as a deployment requirement.

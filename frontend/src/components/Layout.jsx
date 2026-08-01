@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
 	return (
 		<div className="app-layout">
 			<header className="app-navbar">
-				<div className="nav-left">
+				<nav className="nav-left" aria-label="Primary navigation">
 					<Link to="/" className="brand">
 						Notes
 					</Link>
@@ -37,10 +37,10 @@ const Layout = ({ children }) => {
 					>
 						Notes
 					</NavLink>
-				</div>
+				</nav>
 
 				<div className="nav-right">
-					<button className="logout-btn" onClick={handleLogout}>
+					<button type="button" className="logout-btn" onClick={handleLogout}>
 						Logout
 					</button>
 				</div>

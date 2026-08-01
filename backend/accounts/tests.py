@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.conf import settings
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -27,15 +28,14 @@ class AccountsAPITests(TestCase):
         token_payload = {"email": "test@example.com", "password": "StrongPass1!"}
         r = self.client.post("/api/accounts/token/", token_payload, format="json")
         self.assertEqual(r.status_code, 200, r.data)
-        self.assertIn("access", r.data)
-        self.assertIn("refresh", r.data)
+        self.assertNotIn("access", r.data)
+        self.assertIn(settings.JWT_ACCESS_COOKIE, r.cookies)
+        self.assertIn(settings.JWT_REFRESH_COOKIE, r.cookies)
+        self.assertTrue(r.cookies[settings.JWT_ACCESS_COOKIE]["httponly"])
 
-        refresh_payload = {"refresh": r.data["refresh"]}
-        rr = self.client.post(
-            "/api/accounts/token/refresh/", refresh_payload, format="json"
-        )
+        rr = self.client.post("/api/accounts/token/refresh/", {}, format="json")
         self.assertEqual(rr.status_code, 200, rr.data)
-        self.assertIn("access", rr.data)
+        self.assertIn(settings.JWT_ACCESS_COOKIE, rr.cookies)
 
     def test_registration_rejects_mismatched_passwords(self):
         response = self.client.post(
@@ -90,7 +90,7 @@ class AccountsAPITests(TestCase):
             {"email": "claims@example.com", "password": "StrongPass1!"},
             format="json",
         )
-        token = AccessToken(response.data["access"])
+        token = AccessToken(response.cookies[settings.JWT_ACCESS_COOKIE].value)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(token["email"], "claims@example.com")
@@ -107,6 +107,39 @@ class AccountsAPITests(TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertNotIn("access", response.data)
+
+    def test_session_and_logout_use_cookie_authentication(self):
+        CustomUser.objects.create_user("cookie@example.com", "cookieuser", "StrongPass1!")
+        self.client.post(
+            "/api/accounts/token/",
+            {"email": "cookie@example.com", "password": "StrongPass1!"},
+            format="json",
+        )
+
+        session = self.client.get("/api/accounts/session/")
+        logout = self.client.post("/api/accounts/logout/", {}, format="json")
+
+        self.assertEqual(session.status_code, 200)
+        self.assertEqual(session.data["user"]["user_name"], "cookieuser")
+        self.assertEqual(logout.status_code, 204)
+        self.assertEqual(logout.cookies[settings.JWT_ACCESS_COOKIE].value, "")
+
+    def test_cookie_login_requires_csrf_token(self):
+        csrf_client = APIClient(enforce_csrf_checks=True)
+        CustomUser.objects.create_user("csrf@example.com", "csrfuser", "StrongPass1!")
+        payload = {"email": "csrf@example.com", "password": "StrongPass1!"}
+
+        denied = csrf_client.post("/api/accounts/token/", payload, format="json")
+        csrf_client.get("/api/accounts/csrf/")
+        allowed = csrf_client.post(
+            "/api/accounts/token/",
+            payload,
+            format="json",
+            HTTP_X_CSRFTOKEN=csrf_client.cookies["csrftoken"].value,
+        )
+
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(allowed.status_code, 200)
 
 
 class CustomUserManagerTests(TestCase):

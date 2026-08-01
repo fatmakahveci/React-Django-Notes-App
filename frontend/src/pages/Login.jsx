@@ -43,13 +43,14 @@ const Login = () => {
 				</p>
 
 				{authError ? (
-					<div className="login-error">{authError}</div>
+					<div className="login-error" role="alert">{authError}</div>
 				) : null}
 
 				<form onSubmit={handleSubmit} className="login-form">
 					<div className="login-field">
-						<label>Email</label>
+						<label htmlFor="login-email">Email</label>
 						<input
+							id="login-email"
 							type="email"
 							name="email"
 							autoComplete="email"
@@ -61,8 +62,9 @@ const Login = () => {
 					</div>
 
 					<div className="login-field">
-						<label>Password</label>
+						<label htmlFor="login-password">Password</label>
 						<input
+							id="login-password"
 							type="password"
 							name="password"
 							autoComplete="current-password"
