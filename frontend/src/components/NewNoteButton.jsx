@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ReactComponent as AddIcon } from "../assets/add.svg";
+import AddIcon from "../assets/add.svg?react";
 import "./newnote.css";
 
 const NewNoteButton = () => {

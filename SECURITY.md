@@ -1,21 +1,38 @@
-# Security Policy
+# Güvenlik Politikası
 
-## Supported Versions
+## Desteklenen sürüm
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Güvenlik güncellemeleri yalnızca `main` branch'in en güncel hali için sağlanır.
+Eski commitler ve kişisel forklar ayrıca desteklenmez.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+## Güvenlik açığı bildirme
 
-## Reporting a Vulnerability
+Bir güvenlik açığını herkese açık issue olarak paylaşmayın. Depodaki
+[özel güvenlik bildirimi](https://github.com/fatmakahveci/React-Django-Notes-App/security/advisories/new)
+üzerinden aşağıdaki bilgileri gönderin:
 
-Use this section to tell people how to report a vulnerability.
+- Etkilenen endpoint, bileşen veya commit
+- Açığın yeniden üretim adımları
+- Beklenen ve gözlenen davranış
+- Olası etkisi
+- Varsa örnek istek, yanıt veya düzeltme önerisi
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Bildirim incelenene kadar erişim tokenlarını, gerçek kullanıcı verilerini veya
+çalışan sistemlere ait gizli bilgileri eklemeyin.
+
+## Güvenli dağıtım gereksinimleri
+
+- `DJANGO_DEBUG=false` kullanın.
+- Uzun ve rastgele bir `DJANGO_SECRET_KEY` tanımlayın.
+- `DJANGO_ALLOWED_HOSTS`, CORS ve CSRF listelerini gerçek alan adlarıyla
+  sınırlandırın.
+- Uygulama ve API trafiğini HTTPS üzerinden sunun.
+- Veritabanı parolalarını ve tokenları depoya commit etmeyin.
+- Bağımlılık ve güvenlik taramalarını düzenli çalıştırın.
+
+## Kimlik doğrulama notları
+
+Not endpointleri JWT doğrulaması gerektirir ve sorgular aktif kullanıcıya göre
+filtrelenir. Frontend tokenları `localStorage` içinde tutar; bu nedenle dağıtımda
+güçlü bir Content Security Policy kullanılması ve XSS risklerinin dikkatle
+yönetilmesi önerilir.

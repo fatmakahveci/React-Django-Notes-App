@@ -15,6 +15,8 @@ const REGISTER_URL = "/api/accounts/register/";
 
 const decodeJwtPayload = (token) => {
 	try {
+		// Decoding is only for client-side display/state. Token authenticity is
+		// still verified by Django on every protected request.
 		const payload = token.split(".")[1];
 		const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
 		const json = decodeURIComponent(
