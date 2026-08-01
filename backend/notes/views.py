@@ -1,4 +1,6 @@
 from rest_framework import generics
+from rest_framework.filters import SearchFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Note
@@ -12,9 +14,18 @@ class UserNoteQuerysetMixin:
         return Note.objects.filter(user=self.request.user)
 
 
+class NotePagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 class NoteListView(UserNoteQuerysetMixin, generics.ListCreateAPIView):
     serializer_class = NoteSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = NotePagination
+    filter_backends = [SearchFilter]
+    search_fields = ["title", "body"]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

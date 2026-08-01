@@ -50,6 +50,19 @@ a {
   text-decoration: none;
 }
 
+:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.route-loading {
+  min-height: 50vh;
+  display: grid;
+  place-items: center;
+  color: var(--color-gray);
+  font-weight: 700;
+}
+
 /* Utilities used by your auth forms */
 .instructions {
   font-size: 0.75rem;

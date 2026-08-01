@@ -30,10 +30,13 @@ beforeEach(() => vi.clearAllMocks());
 
 test("loads notes and filters them by title or body", async () => {
 	authApi.get.mockResolvedValue({
-		data: [
-			{ id: 1, title: "Work", body: "Release checklist" },
-			{ id: 2, title: "Home", body: "Buy coffee" },
-		],
+		data: {
+			count: 2,
+			results: [
+				{ id: 1, title: "Work", body: "Release checklist" },
+				{ id: 2, title: "Home", body: "Buy coffee" },
+			],
+		},
 	});
 	renderList();
 
@@ -44,12 +47,13 @@ test("loads notes and filters them by title or body", async () => {
 	fireEvent.change(screen.getByPlaceholderText("Search notes..."), {
 		target: { value: "coffee" },
 	});
-	expect(screen.queryByText("Work")).not.toBeInTheDocument();
-	expect(screen.getByText("Home")).toBeInTheDocument();
+	await waitFor(() =>
+		expect(authApi.get).toHaveBeenLastCalledWith("/api/notes/?page=1&search=coffee"),
+	);
 });
 
 test("shows an empty state for an empty response", async () => {
-	authApi.get.mockResolvedValue({ data: [] });
+	authApi.get.mockResolvedValue({ data: { count: 0, results: [] } });
 	renderList();
 
 	await waitFor(() => expect(screen.getByText("No notes found")).toBeInTheDocument());

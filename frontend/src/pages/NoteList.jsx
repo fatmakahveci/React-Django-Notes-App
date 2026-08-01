@@ -19,16 +19,34 @@ const NoteList = () => {
 
 	const [notes, setNotes] = useState([]);
 	const [query, setQuery] = useState("");
+	const [debouncedQuery, setDebouncedQuery] = useState("");
+	const [page, setPage] = useState(1);
+	const [pageCount, setPageCount] = useState(1);
+	const [totalCount, setTotalCount] = useState(0);
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedQuery(query.trim());
+			setPage(1);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [query]);
 
 	useEffect(() => {
 		const fetchNotes = async () => {
 			setLoading(true);
 			setError("");
 			try {
-				const res = await authApi.get("/api/notes/");
-				setNotes(Array.isArray(res.data) ? res.data : []);
+				const params = new URLSearchParams({ page: String(page) });
+				if (debouncedQuery) params.set("search", debouncedQuery);
+				const res = await authApi.get(`/api/notes/?${params}`);
+				const results = Array.isArray(res.data?.results) ? res.data.results : [];
+				const count = Number(res.data?.count || 0);
+				setNotes(results);
+				setTotalCount(count);
+				setPageCount(Math.max(1, Math.ceil(count / 12)));
 			} catch (err) {
 				const status = err?.response?.status;
 				setError(
@@ -42,17 +60,7 @@ const NoteList = () => {
 		};
 
 		fetchNotes();
-	}, [authApi]);
-
-	const filtered = useMemo(() => {
-		const q = query.trim().toLowerCase();
-		if (!q) return notes;
-		return notes.filter((n) => {
-			const title = (n.title ?? "").toLowerCase();
-			const body = (n.body ?? "").toLowerCase();
-			return title.includes(q) || body.includes(q);
-		});
-	}, [notes, query]);
+	}, [authApi, debouncedQuery, page]);
 
 	return (
 		<div className="nl-page">
@@ -60,7 +68,7 @@ const NoteList = () => {
 				<div className="nl-top">
 					<div>
 						<h1 className="nl-title">Your notes</h1>
-						<p className="nl-subtitle">{notes.length} total</p>
+						<p className="nl-subtitle">{totalCount} total</p>
 					</div>
 
 					<div className="nl-searchWrap">
@@ -69,19 +77,20 @@ const NoteList = () => {
 							placeholder="Search notes..."
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
+							aria-label="Search notes"
 						/>
 					</div>
 				</div>
 
-				{error ? <div className="nl-alert">{error}</div> : null}
-				{loading ? <div className="nl-loading">Loading...</div> : null}
+				{error ? <div className="nl-alert" role="alert">{error}</div> : null}
+				{loading ? <div className="nl-loading" role="status">Loading...</div> : null}
 
 				<div className="nl-grid">
-					{filtered.map((note) => (
+					{notes.map((note) => (
 						<ListItem key={note.id} note={note} />
 					))}
 
-					{!loading && filtered.length === 0 ? (
+					{!loading && notes.length === 0 ? (
 						<div className="nl-empty">
 							<div className="nl-emptyTitle">No notes found</div>
 							<div className="nl-emptyText">
@@ -90,6 +99,18 @@ const NoteList = () => {
 						</div>
 					) : null}
 				</div>
+
+				{pageCount > 1 ? (
+					<nav className="nl-pagination" aria-label="Notes pagination">
+						<button disabled={page === 1 || loading} onClick={() => setPage((value) => value - 1)}>
+							Previous
+						</button>
+						<span>Page {page} of {pageCount}</span>
+						<button disabled={page === pageCount || loading} onClick={() => setPage((value) => value + 1)}>
+							Next
+						</button>
+					</nav>
+				) : null}
 
 				<AddButton />
 			</div>

@@ -56,6 +56,7 @@ test("creates a new note after the autosave delay", async () => {
 
 	await act(async () => Promise.resolve());
 	expect(authApi.post).toHaveBeenCalledWith("/api/notes/", {
+		title: "",
 		body: "First draft",
 	});
 });
@@ -85,6 +86,25 @@ test("loads and patches an existing note", async () => {
 
 	await act(async () => Promise.resolve());
 	expect(authApi.patch).toHaveBeenCalledWith("/api/notes/9/", {
+		title: "",
 		body: "New body",
+	});
+});
+
+test("autosaves title changes together with the body", async () => {
+	authApi.get.mockResolvedValue({ data: { id: 10, title: "Old", body: "Body" } });
+	authApi.patch.mockResolvedValue({ data: { id: 10, title: "New", body: "Body" } });
+	renderNote("/notes/10");
+
+	await act(async () => Promise.resolve());
+	fireEvent.change(screen.getByPlaceholderText("Note title"), {
+		target: { value: "New" },
+	});
+	await act(() => vi.advanceTimersByTimeAsync(700));
+	await act(async () => Promise.resolve());
+
+	expect(authApi.patch).toHaveBeenCalledWith("/api/notes/10/", {
+		title: "New",
+		body: "Body",
 	});
 });

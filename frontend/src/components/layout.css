@@ -80,4 +80,16 @@
     .app-navbar {
         padding: 0 14px;
     }
+
+    .nav-left {
+        gap: 4px;
+    }
+
+    .brand {
+        display: none;
+    }
+
+    .nav-link {
+        padding: 8px;
+    }
 }

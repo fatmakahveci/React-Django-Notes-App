@@ -1,17 +1,19 @@
-# API Referansı
+# API Reference
 
-Varsayılan temel adres: `http://127.0.0.1:8000`
+Default base URL: `http://127.0.0.1:8000`
 
-İstek ve yanıt gövdeleri JSON biçimindedir. Not endpointleri şu başlığı ister:
+Request and response bodies use JSON. Access and refresh JWTs are stored in
+HttpOnly cookies that are unavailable to JavaScript. Browser requests must send
+cookies, and unsafe HTTP methods must include the CSRF header:
 
 ```http
-Authorization: Bearer <access-token>
 Content-Type: application/json
+X-CSRFToken: <csrftoken-cookie-value>
 ```
 
-## Kimlik doğrulama
+## Authentication
 
-### Kullanıcı oluşturma
+### Register a user
 
 `POST /api/accounts/register/`
 
@@ -24,10 +26,18 @@ Content-Type: application/json
 }
 ```
 
-Başarılı yanıt `201 Created` durumuyla e-posta ve kullanıcı adını döndürür.
-Parolalar yanıta eklenmez ve Django'nun etkin parola politikasını karşılamalıdır.
+A successful request returns the email and username with `201 Created`.
+Passwords are never included in the response and must satisfy Django's active
+password policy.
 
-### Token alma
+### Obtain a CSRF cookie
+
+`GET /api/accounts/csrf/`
+
+Call this endpoint before registration, sign-in, refresh, sign-out, or note
+write operations. It returns the CSRF token and sets the `csrftoken` cookie.
+
+### Sign in
 
 `POST /api/accounts/token/`
 
@@ -38,95 +48,118 @@ Parolalar yanıta eklenmez ve Django'nun etkin parola politikasını karşılama
 }
 ```
 
-Örnek `200 OK` yanıtı:
+Example `200 OK` response:
 
 ```json
 {
-  "refresh": "<refresh-token>",
-  "access": "<access-token>"
+  "user": {
+    "email": "user@example.com",
+    "user_name": "exampleuser"
+  }
 }
 ```
 
-Access token ayrıca `email` ve `user_name` claim'lerini içerir.
+Access and refresh tokens are not returned in the response body. They are
+stored in the `notes_access` and `notes_refresh` HttpOnly cookies.
 
-### Access token yenileme
+### Refresh the access token
 
 `POST /api/accounts/token/refresh/`
 
-```json
-{
-  "refresh": "<refresh-token>"
-}
-```
+Send an empty JSON body. A valid refresh cookie causes the access cookie to be
+renewed.
 
-Başarılı yanıt yeni bir `access` token döndürür. Token rotasyonu sırasında yeni
-bir `refresh` token da dönebilir.
+### Read the current session
 
-## Notlar
+`GET /api/accounts/session/`
 
-Her not yalnızca sahibi tarafından görülebilir veya değiştirilebilir. Başka bir
-kullanıcıya ait ID ile yapılan detay istekleri `404 Not Found` döndürür.
+Returns the current user when the access cookie is valid.
 
-### Notları listeleme
+### Sign out
+
+`POST /api/accounts/logout/`
+
+Blacklists the refresh token, clears both authentication cookies, and returns
+`204 No Content`.
+
+## Notes
+
+Each note can be viewed or modified only by its owner. Detail requests using
+another user's note ID return `404 Not Found`.
+
+### List notes
 
 `GET /api/notes/`
 
-`200 OK` ile güncellenme tarihine göre yeniden eskiye sıralı bir dizi döndürür.
+Returns a paginated response ordered from most recently updated to oldest.
+Use `?page=2`, `?page_size=25` (maximum 100), and `?search=text` to search
+titles and bodies.
 
-### Not oluşturma
+```json
+{
+  "count": 24,
+  "next": "http://127.0.0.1:8000/api/notes/?page=2",
+  "previous": null,
+  "results": []
+}
+```
+
+### Create a note
 
 `POST /api/notes/`
 
 ```json
 {
-  "title": "Alışveriş listesi",
-  "body": "Süt, kahve, ekmek"
+  "title": "Shopping list",
+  "body": "Milk, coffee, and bread"
 }
 ```
 
-`title` ve `body` isteğe bağlıdır. Başarılı yanıt `201 Created` döndürür.
+`title` and `body` are optional. A successful request returns `201 Created`.
 
-### Not detayını alma
+### Retrieve a note
 
 `GET /api/notes/{id}/`
 
-### Notu güncelleme
+### Update a note
 
-Kısmi güncelleme için `PATCH /api/notes/{id}/`:
+Use `PATCH /api/notes/{id}/` for partial updates:
 
 ```json
 {
-  "body": "Güncellenmiş içerik"
+  "title": "Updated title",
+  "body": "Updated content"
 }
 ```
 
-Tüm düzenlenebilir alanları göndermek için `PUT` da desteklenir.
+`PUT` is also supported when sending all editable fields.
 
-### Notu silme
+### Delete a note
 
 `DELETE /api/notes/{id}/`
 
-Başarılı silme işlemi gövdesiz `204 No Content` döndürür.
+A successful deletion returns an empty `204 No Content` response.
 
-## Not yanıt şeması
+## Note response schema
 
 ```json
 {
   "id": 1,
   "user": "exampleuser",
-  "title": "Alışveriş listesi",
-  "body": "Süt, kahve, ekmek",
+  "title": "Shopping list",
+  "body": "Milk, coffee, and bread",
   "created": "2026-08-01T12:00:00Z",
   "updated": "2026-08-01T12:05:00Z"
 }
 ```
 
-`id`, `user`, `created` ve `updated` alanları salt okunurdur.
+`id`, `user`, `created`, and `updated` are read-only fields.
 
-## Yaygın hata durumları
+## Common errors
 
-| Durum | Anlamı |
+| Status | Meaning |
 | --- | --- |
-| `400 Bad Request` | Validasyon hatası veya geçersiz istek gövdesi |
-| `401 Unauthorized` | Token eksik, geçersiz veya süresi dolmuş |
-| `404 Not Found` | Kaynak yok ya da oturum açan kullanıcıya ait değil |
+| `400 Bad Request` | Validation error or invalid request body |
+| `401 Unauthorized` | Authentication cookie is missing, invalid, or expired |
+| `403 Forbidden` | CSRF cookie or header is missing or invalid |
+| `404 Not Found` | Resource does not exist or belongs to another user |

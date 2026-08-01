@@ -3,11 +3,8 @@ import api from "../api/axios";
 import AuthContext, { AuthProvider } from "../context/AuthContext";
 
 vi.mock("../api/axios", () => ({
-	default: { post: vi.fn() },
+	default: { get: vi.fn(), post: vi.fn() },
 }));
-
-const jwt = (payload) =>
-	`header.${btoa(JSON.stringify(payload)).replace(/=/g, "")}.signature`;
 
 function ContextProbe() {
 	return (
@@ -17,19 +14,13 @@ function ContextProbe() {
 					<div data-testid="loading">{String(context.loadingAuth)}</div>
 					<div data-testid="user">{context.user?.user_name || "anonymous"}</div>
 					<div data-testid="error">{context.authError}</div>
-					<button
-						onClick={() =>
-							context.loginUser({
-								preventDefault: vi.fn(),
-								target: {
-									email: { value: "user@example.com" },
-									password: { value: "StrongPass1!" },
-								},
-							})
-						}
-					>
-						login
-					</button>
+					<button onClick={() => context.loginUser({
+						preventDefault: vi.fn(),
+						target: {
+							email: { value: "user@example.com" },
+							password: { value: "StrongPass1!" },
+						},
+					})}>login</button>
 					<button onClick={context.logoutUser}>logout</button>
 				</>
 			)}
@@ -37,54 +28,54 @@ function ContextProbe() {
 	);
 }
 
+async function renderLoggedOut() {
+	api.get.mockImplementation((url) =>
+		url.endsWith("/csrf/") ? Promise.resolve({ data: {} }) : Promise.reject(new Error("no session")),
+	);
+	api.post.mockRejectedValue(new Error("no refresh cookie"));
+	render(<AuthProvider><ContextProbe /></AuthProvider>);
+	await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
+	vi.clearAllMocks();
+}
+
 beforeEach(() => {
 	localStorage.clear();
 	vi.clearAllMocks();
 });
 
-test("persists tokens and exposes the decoded user after login", async () => {
-	const tokens = {
-		access: jwt({ user_name: "demo", email: "user@example.com" }),
-		refresh: "refresh-token",
-	};
-	api.post.mockResolvedValue({ data: tokens });
-	render(<AuthProvider><ContextProbe /></AuthProvider>);
+test("uses the server session and never stores tokens in browser storage", async () => {
+	await renderLoggedOut();
+	api.get.mockResolvedValue({ data: {} });
+	api.post.mockResolvedValue({ data: { user: { user_name: "demo" } } });
 
-	await waitFor(() => expect(screen.getByTestId("loading")).toHaveTextContent("false"));
 	fireEvent.click(screen.getByText("login"));
 
 	await waitFor(() => expect(screen.getByTestId("user")).toHaveTextContent("demo"));
-	expect(JSON.parse(localStorage.getItem("authTokens"))).toEqual(tokens);
+	expect(localStorage.getItem("authTokens")).toBeNull();
 	expect(api.post).toHaveBeenCalledWith("/api/accounts/token/", {
 		email: "user@example.com",
 		password: "StrongPass1!",
 	});
 });
 
-test("clears stored authentication and reports a failed login", async () => {
-	localStorage.setItem("authTokens", JSON.stringify({ access: jwt({ user_name: "old" }) }));
+test("clears authentication and reports a failed login", async () => {
+	await renderLoggedOut();
+	api.get.mockResolvedValue({ data: {} });
 	api.post.mockRejectedValue(new Error("invalid credentials"));
-	render(<AuthProvider><ContextProbe /></AuthProvider>);
 
 	fireEvent.click(screen.getByText("login"));
 
-	await waitFor(() =>
-		expect(screen.getByTestId("error")).toHaveTextContent("Login failed"),
-	);
+	await waitFor(() => expect(screen.getByTestId("error")).toHaveTextContent("Login failed"));
 	expect(screen.getByTestId("user")).toHaveTextContent("anonymous");
-	expect(localStorage.getItem("authTokens")).toBeNull();
 });
 
-test("logout clears user state and local storage", async () => {
-	localStorage.setItem(
-		"authTokens",
-		JSON.stringify({ access: jwt({ user_name: "demo" }) }),
-	);
+test("restores an authenticated session from HttpOnly cookies", async () => {
+	api.get.mockImplementation((url) => {
+		if (url.endsWith("/csrf/")) return Promise.resolve({ data: {} });
+		return Promise.resolve({ data: { user: { user_name: "restored" } } });
+	});
 	render(<AuthProvider><ContextProbe /></AuthProvider>);
 
-	expect(screen.getByTestId("user")).toHaveTextContent("demo");
-	fireEvent.click(screen.getByText("logout"));
-
-	expect(screen.getByTestId("user")).toHaveTextContent("anonymous");
+	await waitFor(() => expect(screen.getByTestId("user")).toHaveTextContent("restored"));
 	expect(localStorage.getItem("authTokens")).toBeNull();
 });

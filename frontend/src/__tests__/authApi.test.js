@@ -37,19 +37,10 @@ beforeEach(() => {
 	};
 });
 
-test("adds the access token to protected requests", () => {
-	createAuthApi({ authTokens: { access: "access-token" } });
-
-	const config = handlers.requestSuccess({ headers: {} });
-
-	expect(config.headers.Authorization).toBe("Bearer access-token");
-});
-
 test("refreshes once and replays a rejected request", async () => {
 	const setAuthTokens = vi.fn();
-	axios.post.mockResolvedValue({ data: { access: "new-access" } });
+	axios.post.mockResolvedValue({ data: { authenticated: true } });
 	createAuthApi({
-		authTokens: { access: "old-access", refresh: "refresh-token" },
 		setAuthTokens,
 		logoutUser: vi.fn(),
 	});
@@ -62,20 +53,16 @@ test("refreshes once and replays a rejected request", async () => {
 
 	expect(axios.post).toHaveBeenCalledWith(
 		expect.stringMatching(/\/api\/accounts\/token\/refresh\/$/),
-		{ refresh: "refresh-token" },
-		expect.any(Object),
+		{},
+		expect.objectContaining({ withCredentials: true }),
 	);
-	expect(setAuthTokens).toHaveBeenCalledWith({
-		access: "new-access",
-		refresh: "refresh-token",
-	});
-	expect(originalRequest.headers.Authorization).toBe("Bearer new-access");
+	expect(setAuthTokens).toHaveBeenCalledWith({ access: true });
 	expect(instance).toHaveBeenCalledWith(originalRequest);
 });
 
 test("logs out instead of retrying forever", async () => {
 	const logoutUser = vi.fn();
-	createAuthApi({ authTokens: { refresh: "refresh-token" }, logoutUser });
+	createAuthApi({ logoutUser });
 	const error = {
 		config: { _retry: true },
 		response: { status: 401 },
@@ -87,7 +74,7 @@ test("logs out instead of retrying forever", async () => {
 });
 
 test("does not refresh non-authentication failures", async () => {
-	createAuthApi({ authTokens: { refresh: "refresh-token" } });
+	createAuthApi({});
 	const error = { config: {}, response: { status: 500 } };
 
 	await expect(handlers.responseError(error)).rejects.toBe(error);
