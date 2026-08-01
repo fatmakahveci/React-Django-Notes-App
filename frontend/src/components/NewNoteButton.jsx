@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "../router";
 import AddIcon from "../assets/add.svg?react";
 import "./newnote.css";
 

@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useSearchParams } from "wouter";
+import { Link, useNavigate } from "../router";
 import AuthContext from "../context/AuthContext";
 import "./login.css";
-import { useLocation } from "react-router-dom";
 
 const Login = () => {
 	const { loginUser, authError, authTokens } = useContext(AuthContext);
@@ -11,13 +11,14 @@ const Login = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	
-	const location = useLocation();
+	const [searchParams] = useSearchParams();
 
 	useEffect(() => {
-		if (location.state?.email) {
-			setEmail(location.state.email);
+		const registeredEmail = searchParams.get("email");
+		if (registeredEmail) {
+			setEmail(registeredEmail);
 		}
-	}, [location.state]);
+	}, [searchParams]);
 
 	useEffect(() => {
 		if (authTokens?.access) {

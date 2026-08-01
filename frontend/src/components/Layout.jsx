@@ -1,9 +1,9 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "../router";
 import { useContext } from "react";
 import AuthContext from "../context/AuthContext";
 import "./layout.css";
 
-const Layout = () => {
+const Layout = ({ children }) => {
 	const { logoutUser } = useContext(AuthContext);
 	const navigate = useNavigate();
 
@@ -46,9 +46,7 @@ const Layout = () => {
 				</div>
 			</header>
 
-			<main className="app-content">
-				<Outlet />
-			</main>
+			<main className="app-content">{children}</main>
 		</div>
 	);
 };

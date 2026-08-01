@@ -15,7 +15,7 @@ Frontend React ve Vite, REST API ise Django REST Framework ile geliştirilmişti
 
 ## Teknolojiler
 
-- Frontend: React 18, React Router 7, Axios, Bootstrap, Vite
+- Frontend: React 18, Wouter, Axios, Bootstrap, Vite
 - Backend: Django 5.2 LTS, Django REST Framework, SimpleJWT
 - Veritabanı: geliştirmede SQLite; PostgreSQL sürücüsü hazırdır
 - Test: Vitest, Testing Library ve Django test runner
@@ -71,7 +71,9 @@ VITE_API_BASE_URL=https://api.example.com
 Production ortamında `DJANGO_DEBUG=false` kullanıldığında
 `DJANGO_SECRET_KEY` zorunludur. İzin verilen frontend adresini
 `DJANGO_CORS_ALLOWED_ORIGINS` ve `DJANGO_CSRF_TRUSTED_ORIGINS` değerlerine de
-ekleyin.
+ekleyin. Production modunda HTTPS yönlendirmesi, secure cookie ve bir yıllık
+HSTS varsayılan olarak etkinleşir; reverse proxy ve alan adı yapılandırmanızı
+buna göre hazırlayın.
 
 ## Komutlar
 

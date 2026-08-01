@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Route, Switch } from "wouter";
 import AuthContext from "../context/AuthContext";
 import Note from "../pages/Note";
+import TestRouter from "../testRouter";
 
 const { authApi } = vi.hoisted(() => ({
 	authApi: {
@@ -25,12 +26,12 @@ const contextValue = {
 const renderNote = (path) =>
 	render(
 		<AuthContext.Provider value={contextValue}>
-			<MemoryRouter initialEntries={[path]}>
-				<Routes>
-					<Route path="/notes/new" element={<Note />} />
-					<Route path="/notes/:noteId" element={<Note />} />
-				</Routes>
-			</MemoryRouter>
+			<TestRouter path={path}>
+				<Switch>
+					<Route path="/notes/new"><Note /></Route>
+					<Route path="/notes/:noteId"><Note /></Route>
+				</Switch>
+			</TestRouter>
 		</AuthContext.Provider>,
 	);
 

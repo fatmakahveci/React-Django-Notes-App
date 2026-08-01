@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "../router";
 import LeftArrow from "../assets/left_arrow.svg?react";
 import AuthContext from "../context/AuthContext";
 import { createAuthApi } from "../api/authApi";

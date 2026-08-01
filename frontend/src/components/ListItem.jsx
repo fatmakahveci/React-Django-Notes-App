@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "../router";
 import "./list-item.css";
 
 const normalize = (s) => (s ?? "").toString().replace(/\s+/g, " ").trim();

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import NoteList from "../pages/NoteList";
+import TestRouter from "../testRouter";
 
 const { authApi } = vi.hoisted(() => ({
 	authApi: { get: vi.fn() },
@@ -20,9 +20,9 @@ const renderList = () =>
 				logoutUser: vi.fn(),
 			}}
 		>
-			<MemoryRouter>
+			<TestRouter>
 				<NoteList />
-			</MemoryRouter>
+			</TestRouter>
 		</AuthContext.Provider>,
 	);
 

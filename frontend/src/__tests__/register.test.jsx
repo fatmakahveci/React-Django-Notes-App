@@ -1,17 +1,18 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Route, Switch } from "wouter";
 import AuthContext from "../context/AuthContext";
 import Register from "../pages/Register";
+import TestRouter from "../testRouter";
 
 const renderRegister = (registerUser) =>
 	render(
 		<AuthContext.Provider value={{ registerUser, authTokens: null }}>
-			<MemoryRouter initialEntries={["/register"]}>
-				<Routes>
-					<Route path="/register" element={<Register />} />
-					<Route path="/login" element={<div>Login destination</div>} />
-				</Routes>
-			</MemoryRouter>
+			<TestRouter path="/register">
+				<Switch>
+					<Route path="/register"><Register /></Route>
+					<Route path="/login"><div>Login destination</div></Route>
+				</Switch>
+			</TestRouter>
 		</AuthContext.Provider>,
 	);
 

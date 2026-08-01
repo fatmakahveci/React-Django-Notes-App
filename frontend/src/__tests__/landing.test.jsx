@@ -1,18 +1,18 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
 import Landing from "../pages/Landing";
 import AuthContext from "../context/AuthContext";
+import TestRouter from "../testRouter";
 
 function renderLanding(authTokens = null, user = null) {
 	return render(
-		<MemoryRouter initialEntries={["/"]}>
+		<TestRouter>
 			<AuthContext.Provider
 				value={{ authTokens, user, logoutUser: vi.fn() }}
 			>
 				<Landing />
 			</AuthContext.Provider>
-		</MemoryRouter>,
+		</TestRouter>,
 	);
 }
 
