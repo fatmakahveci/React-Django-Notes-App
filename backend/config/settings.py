@@ -1,27 +1,30 @@
 import logging
-from pathlib import Path
-from datetime import timedelta
 import os
+from datetime import timedelta
+from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-52ti8j6mn31u9gg^h(%*2spinev0c1#sdqy*z5hcjq11=igfnb"
+def env_list(name, default=""):
+    """Read a comma-separated environment variable as a clean list."""
+    return [value.strip() for value in os.getenv(name, default).split(",") if value.strip()]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-local-development-only")
+DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes"}
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
+
+if not DEBUG and SECRET_KEY == "django-insecure-local-development-only":
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.DEBUG if DEBUG else logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
 )
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 # Application definition
 
@@ -39,22 +42,15 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
 ]
 
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://localhost:8080",
-]
-
-CORS_ALLOW_CREDENTIALS = True  # new
-
-CORS_ALLOWED_ORIGINS = [  # new
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://localhost:9000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:9000",
-]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = env_list(
+    "DJANGO_CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173",
+)
+CSRF_TRUSTED_ORIGINS = env_list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173",
+)
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -85,8 +81,6 @@ TEMPLATES = [
         },
     },
 ]
-
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000/"]
 
 DATABASES = {
     "default": {
@@ -130,7 +124,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")  # new
+STATIC_ROOT = BASE_DIR / "static"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -140,7 +134,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }

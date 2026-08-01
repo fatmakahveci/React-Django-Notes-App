@@ -8,7 +8,7 @@ function renderLanding(authTokens = null, user = null) {
 	return render(
 		<MemoryRouter initialEntries={["/"]}>
 			<AuthContext.Provider
-				value={{ authTokens, user, logoutUser: jest.fn() }}
+				value={{ authTokens, user, logoutUser: vi.fn() }}
 			>
 				<Landing />
 			</AuthContext.Provider>

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ReactComponent as LeftArrow } from "../assets/left_arrow.svg";
+import LeftArrow from "../assets/left_arrow.svg?react";
 import AuthContext from "../context/AuthContext";
 import { createAuthApi } from "../api/authApi";
 import "./note-editor.css";
@@ -9,8 +9,9 @@ const AUTOSAVE_DELAY_MS = 700;
 
 const Note = () => {
 	const params = useParams();
-	const noteIdFromRoute = params.noteId; // "new" does NOT exist here; new is a separate route
-	const isNewRoute = !noteIdFromRoute; // /notes/new has no param
+	// `/notes/new` is a separate route, so only existing notes have a route ID.
+	const noteIdFromRoute = params.noteId;
+	const isNewRoute = !noteIdFromRoute;
 	const navigate = useNavigate();
 
 	const { authTokens, setAuthTokens, logoutUser } = useContext(AuthContext);
@@ -20,7 +21,7 @@ const Note = () => {
 	const [error, setError] = useState("");
 	const [saveState, setSaveState] = useState("idle"); // idle | saving | saved | error
 
-	// For /notes/new: we store created note id here and continue updating without navigation
+	// Retain the server ID after the first autosave so later saves update the same draft.
 	const [draftId, setDraftId] = useState(null);
 
 	const authApi = useMemo(() => {
@@ -113,7 +114,7 @@ const Note = () => {
 			setNote(created);
 			lastSavedBodyRef.current = (created?.body ?? "").toString();
 
-			// IMPORTANT: do not navigate (prevents focus loss / Enter issues)
+			// Staying on the current route preserves textarea focus while typing.
 			if (created?.id) setDraftId(String(created.id));
 
 			setSaveState("saved");
@@ -131,7 +132,7 @@ const Note = () => {
 		setError("");
 
 		try {
-			const res = await authApi.post(`/api/notes/${id}/`, {
+			const res = await authApi.patch(`/api/notes/${id}/`, {
 				body: body ?? "",
 			});
 			const updated = res.data ?? { ...note, body };
@@ -166,7 +167,7 @@ const Note = () => {
 		}
 	};
 
-	// Autosave (create once on /notes/new, then update using draftId)
+	// Debounce autosave: create once on `/notes/new`, then update via `draftId`.
 	useEffect(() => {
 		if (loading) return;
 		if (isFirstLoadRef.current) return;
@@ -176,7 +177,7 @@ const Note = () => {
 
 		if (body === lastSavedBodyRef.current) return;
 
-		// no empty note creation
+		// Avoid creating empty records when a user opens and leaves a new note.
 		if (trimmed.length === 0) {
 			setSaveState("idle");
 			return;
@@ -201,7 +202,7 @@ const Note = () => {
 	const handleBack = () => {
 		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
 
-		// Optional: if draft exists, go to its real URL
+		// Replace the temporary `/new` URL once the draft has a persistent ID.
 		if (isNewRoute && draftId) {
 			navigate(`/notes/${draftId}`, { replace: true });
 			return;

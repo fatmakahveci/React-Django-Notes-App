@@ -36,3 +36,21 @@ test("renders protected page when logged in", () => {
 	renderWithAuth({ access: "fake" });
 	expect(screen.getByText(/Protected/i)).toBeInTheDocument();
 });
+
+test("does not redirect while authentication is loading", () => {
+	render(
+		<MemoryRouter initialEntries={["/notes"]}>
+			<AuthContext.Provider value={{ authTokens: null, loadingAuth: true }}>
+				<Routes>
+					<Route path="/login" element={<LoginPage />} />
+					<Route element={<PrivateRoute />}>
+						<Route path="/notes" element={<ProtectedPage />} />
+					</Route>
+				</Routes>
+			</AuthContext.Provider>
+		</MemoryRouter>,
+	);
+
+	expect(screen.queryByText("Login")).not.toBeInTheDocument();
+	expect(screen.queryByText("Protected")).not.toBeInTheDocument();
+});

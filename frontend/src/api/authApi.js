@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 export function createAuthApi({
 	authTokens,
@@ -7,12 +8,14 @@ export function createAuthApi({
 	refreshPath = "/api/accounts/token/refresh/",
 }) {
 	const instance = axios.create({
-		baseURL: "http://127.0.0.1:8000",
+		baseURL: API_BASE_URL,
 		headers: { "Content-Type": "application/json" },
 	});
 
 	instance.interceptors.request.use(
 		(config) => {
+			// Read the token supplied when this client was created and attach it to
+			// every protected API request.
 			const access = authTokens?.access;
 			if (access) {
 				config.headers = config.headers || {};
@@ -31,6 +34,8 @@ export function createAuthApi({
 			if (!error.response) return Promise.reject(error);
 			if (error.response.status !== 401) return Promise.reject(error);
 
+			// Mark the request before refreshing so a rejected replay cannot enter an
+			// infinite refresh loop.
 			if (originalRequest._retry) {
 				logoutUser?.();
 				return Promise.reject(error);
@@ -45,11 +50,13 @@ export function createAuthApi({
 
 			try {
 				const refreshRes = await axios.post(
-					`http://127.0.0.1:8000${refreshPath}`,
+					`${API_BASE_URL}${refreshPath}`,
 					{ refresh },
 					{ headers: { "Content-Type": "application/json" } },
 				);
 
+				// SimpleJWT may rotate the refresh token, so retain old fields while
+				// replacing everything returned by the refresh endpoint.
 				const newTokens = { ...authTokens, ...refreshRes.data };
 				setAuthTokens(newTokens);
 

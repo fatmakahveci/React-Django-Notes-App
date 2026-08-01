@@ -4,7 +4,8 @@ import datetime
 
 
 def getTitleDefault():
-    return f'Note of {datetime.date.today().strftime("%w %b, %Y")}'
+    # Keep this as a callable so the date is evaluated when each note is created.
+    return f'Note of {datetime.date.today().strftime("%d %b, %Y")}'
 
 
 class Note(models.Model):
