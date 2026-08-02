@@ -1,6 +1,6 @@
 {
-  "short_name": "DjangoReactApp",
-  "name": "Django+React App",
+  "short_name": "Notes",
+  "name": "Notes — Autosaving Secure Notes App",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,6 +10,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#2563eb",
+  "background_color": "#0f172a"
 }
