@@ -1,0 +1,87 @@
+name: Disaster Recovery Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "compose.yaml"
+      - ".github/workflows/disaster-recovery.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: disaster-recovery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backup-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COMPOSE_PROJECT_NAME: notes-dr-${{ github.run_id }}
+      COMPOSE_FILE: compose.yaml:compose.staging.yaml
+      DJANGO_SETTINGS_MODULE: config.settings_staging
+      DJANGO_SECRET_KEY: Automated-DR-only-secret-7Yx9Nq2Wp4Rz8Km6Vt3Hs5Lf1Bc0
+      DATABASE_URL: postgresql://notes:notes-local-password@db:5432/notes
+      DJANGO_CACHE_URL: redis://redis:6379/0
+      DJANGO_ALLOWED_HOSTS: backend,localhost
+      DJANGO_ALLOW_DR_TEST_FIXTURE: "true"
+      DJANGO_DR_TEST_PASSWORD: "AutomatedRecoveryTest1!"
+      DR_MARKER: github-${{ github.run_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend and start dependencies
+        run: |
+          docker compose build backend
+          docker compose up --detach --wait db redis
+
+      - name: Migrate and seed isolated source database
+        run: |
+          docker compose run --rm backend python manage.py migrate --noinput
+          docker compose run --rm \
+            -e DJANGO_ALLOW_DR_TEST_FIXTURE \
+            -e DJANGO_DR_TEST_PASSWORD \
+            backend python manage.py dr_fixture seed --marker "$DR_MARKER"
+
+      - name: Create and validate PostgreSQL backup
+        run: |
+          docker compose exec -T db pg_dump \
+            --username notes \
+            --dbname notes \
+            --format custom \
+            --no-owner \
+            --no-acl > "$RUNNER_TEMP/notes.dump"
+          test -s "$RUNNER_TEMP/notes.dump"
+          sha256sum "$RUNNER_TEMP/notes.dump"
+
+      - name: Restore into a clean database
+        run: |
+          docker compose exec -T db dropdb \
+            --username notes --if-exists notes_restore
+          docker compose exec -T db createdb \
+            --username notes notes_restore
+          docker compose exec -T db pg_restore \
+            --username notes \
+            --dbname notes_restore \
+            --no-owner \
+            --no-acl \
+            --exit-on-error \
+            --single-transaction < "$RUNNER_TEMP/notes.dump"
+
+      - name: Verify restored records and relationships
+        run: |
+          docker compose run --rm \
+            -e DJANGO_ALLOW_DR_TEST_FIXTURE \
+            -e DJANGO_DR_TEST_PASSWORD \
+            -e DATABASE_URL=postgresql://notes:notes-local-password@db:5432/notes_restore \
+            backend python manage.py dr_fixture verify --marker "$DR_MARKER"
+
+      - name: Clean up isolated resources
+        if: always()
+        run: docker compose down --volumes --remove-orphans

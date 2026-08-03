@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
+import { normalizeApiError } from "../api/client";
 
 const AuthContext = createContext(null);
 
@@ -62,9 +63,9 @@ export const AuthProvider = ({ children }) => {
 			});
 			setUser(response.data.user);
 			markAuthenticated();
-		} catch {
+		} catch (error) {
 			clearAuth();
-			setAuthError("Login failed. Check your email and password.");
+			setAuthError(normalizeApiError(error, "Login failed. Check your email and password.").message);
 		}
 	}, [ensureCsrfCookie, markAuthenticated, clearAuth]);
 
@@ -74,10 +75,13 @@ export const AuthProvider = ({ children }) => {
 			await api.post(REGISTER_URL, payload);
 			return { ok: true };
 		} catch (error) {
-			const data = error?.response?.data;
+			const normalized = normalizeApiError(error, "Registration failed.");
 			const message =
-				data?.email?.[0] || data?.user_name?.[0] || data?.password?.[0] ||
-				data?.match_password?.[0] || data?.detail || "Registration failed.";
+				normalized.details?.email?.[0] ||
+				normalized.details?.user_name?.[0] ||
+				normalized.details?.password?.[0] ||
+				normalized.details?.match_password?.[0] ||
+				normalized.message;
 			return { ok: false, error: String(message) };
 		}
 	}, [ensureCsrfCookie]);
@@ -114,10 +118,11 @@ export const AuthProvider = ({ children }) => {
 		setAuthTokens: markAuthenticated,
 		loginUser,
 		logoutUser,
+		clearAuth,
 		registerUser,
 		authError,
 		loadingAuth,
-	}), [user, authTokens, markAuthenticated, loginUser, logoutUser, registerUser, authError, loadingAuth]);
+	}), [user, authTokens, markAuthenticated, loginUser, logoutUser, clearAuth, registerUser, authError, loadingAuth]);
 
 	return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };

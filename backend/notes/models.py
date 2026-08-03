@@ -10,7 +10,11 @@ def getTitleDefault():
 
 class Note(models.Model):
     user = models.ForeignKey(
-        to=CustomUser, on_delete=models.CASCADE, related_name='notes')
+        to=CustomUser,
+        on_delete=models.CASCADE,
+        related_name='notes',
+        db_index=False,
+    )
     title = models.CharField(max_length=120, blank=True,
                              default=getTitleDefault)
     body = models.TextField(null=True, blank=True)
@@ -22,3 +26,6 @@ class Note(models.Model):
 
     class Meta:
         ordering = ["-updated"]
+        indexes = [
+            models.Index(fields=["user", "-updated"], name="note_user_updated_idx"),
+        ]

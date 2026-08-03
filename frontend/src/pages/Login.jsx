@@ -10,6 +10,7 @@ const Login = () => {
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [busy, setBusy] = useState(false);
 	
 	const [searchParams] = useSearchParams();
 
@@ -27,11 +28,18 @@ const Login = () => {
 	}, [authTokens, navigate]);
 
 	const handleSubmit = async (e) => {
-		await loginUser(e);
+		e.preventDefault();
+		if (busy) return;
+		setBusy(true);
+		try {
+			await loginUser(e);
+		} finally {
+			setBusy(false);
+		}
 	};
 
 	return (
-		<div className="login-page">
+		<main className="login-page">
 			<div className="login-card">
 				<Link to="/" className="login-brandLink">
 					Notes
@@ -47,6 +55,7 @@ const Login = () => {
 				) : null}
 
 				<form onSubmit={handleSubmit} className="login-form">
+					<fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0 }}>
 					<div className="login-field">
 						<label htmlFor="login-email">Email</label>
 						<input
@@ -74,9 +83,10 @@ const Login = () => {
 							required
 						/>
 					</div>
+					</fieldset>
 
-					<button type="submit" className="login-button">
-						Sign in
+					<button type="submit" className="login-button" disabled={busy}>
+						{busy ? "Signing in..." : "Sign in"}
 					</button>
 				</form>
 
@@ -93,7 +103,7 @@ const Login = () => {
 					</div>
 				</div>
 			</div>
-		</div>
+		</main>
 	);
 };
 

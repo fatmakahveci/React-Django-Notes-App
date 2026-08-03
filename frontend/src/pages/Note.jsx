@@ -1,8 +1,9 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "../router";
 import LeftArrow from "../assets/left_arrow.svg?react";
 import AuthContext from "../context/AuthContext";
 import { createAuthApi } from "../api/authApi";
+import { normalizeApiError } from "../api/client";
 import "./note-editor.css";
 
 const AUTOSAVE_DELAY_MS = 700;
@@ -14,7 +15,7 @@ const Note = () => {
 	const isNewRoute = !noteIdFromRoute;
 	const navigate = useNavigate();
 
-	const { authTokens, setAuthTokens, logoutUser } = useContext(AuthContext);
+	const { setAuthTokens, clearAuth } = useContext(AuthContext);
 
 	const [note, setNote] = useState({ title: "", body: "" });
 	const [loading, setLoading] = useState(false);
@@ -26,12 +27,11 @@ const Note = () => {
 
 	const authApi = useMemo(() => {
 		return createAuthApi({
-			authTokens,
 			setAuthTokens,
-			logoutUser,
+			onUnauthorized: clearAuth,
 			refreshPath: "/api/accounts/token/refresh/",
 		});
-	}, [authTokens, setAuthTokens, logoutUser]);
+	}, [setAuthTokens, clearAuth]);
 
 	const isFirstLoadRef = useRef(true);
 	const lastSavedContentRef = useRef("");
@@ -48,16 +48,11 @@ const Note = () => {
 	};
 
 	const setHttpError = (prefix, err) => {
-		const status = err?.response?.status;
-		const detail =
-			err?.response?.data?.detail ||
-			err?.response?.data?.message ||
-			err?.message ||
-			"";
+		const apiError = normalizeApiError(err, prefix);
 		setError(
-			status
-				? `${prefix} (HTTP ${status}). ${detail}`
-				: `${prefix}. ${detail}`,
+			apiError.status
+				? `${prefix} (HTTP ${apiError.status}). ${apiError.message}`
+				: apiError.message,
 		);
 	};
 

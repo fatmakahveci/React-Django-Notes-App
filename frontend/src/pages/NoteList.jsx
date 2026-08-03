@@ -1,21 +1,21 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import { createAuthApi } from "../api/authApi";
+import { normalizeApiError } from "../api/client";
 import ListItem from "../components/ListItem";
 import AddButton from "../components/AddButton";
 import "./notes.css";
 
 const NoteList = () => {
-	const { authTokens, setAuthTokens, logoutUser } = useContext(AuthContext);
+	const { setAuthTokens, clearAuth } = useContext(AuthContext);
 
 	const authApi = useMemo(() => {
 		return createAuthApi({
-			authTokens,
 			setAuthTokens,
-			logoutUser,
+			onUnauthorized: clearAuth,
 			refreshPath: "/api/accounts/token/refresh/",
 		});
-	}, [authTokens, setAuthTokens, logoutUser]);
+	}, [setAuthTokens, clearAuth]);
 
 	const [notes, setNotes] = useState([]);
 	const [query, setQuery] = useState("");
@@ -48,12 +48,10 @@ const NoteList = () => {
 				setTotalCount(count);
 				setPageCount(Math.max(1, Math.ceil(count / 12)));
 			} catch (err) {
-				const status = err?.response?.status;
-				setError(
-					status
-						? `Failed to load notes (HTTP ${status}).`
-						: "Failed to load notes.",
-				);
+				const apiError = normalizeApiError(err, "Failed to load notes.");
+				setError(apiError.status
+					? `Failed to load notes (HTTP ${apiError.status}). ${apiError.message}`
+					: apiError.message);
 			} finally {
 				setLoading(false);
 			}
@@ -73,6 +71,7 @@ const NoteList = () => {
 
 					<div className="nl-searchWrap">
 						<input
+							type="search"
 							className="nl-search"
 							placeholder="Search notes..."
 							value={query}

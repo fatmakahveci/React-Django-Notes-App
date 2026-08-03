@@ -1,18 +1,14 @@
 import axios from "axios";
 import { API_BASE_URL } from "../config";
+import { API_CLIENT_CONFIG, createApiClient } from "./client";
 
 export function createAuthApi({
 	setAuthTokens,
-	logoutUser,
+	onUnauthorized,
 	refreshPath = "/api/accounts/token/refresh/",
 }) {
-	const instance = axios.create({
-		baseURL: API_BASE_URL,
-		withCredentials: true,
-		xsrfCookieName: "csrftoken",
-		xsrfHeaderName: "X-CSRFToken",
-		headers: { "Content-Type": "application/json" },
-	});
+	const instance = createApiClient();
+	let refreshPromise = null;
 
 	instance.interceptors.response.use(
 		(response) => response,
@@ -24,27 +20,23 @@ export function createAuthApi({
 
 			// Mark the request before refreshing so a rejected replay cannot enter an
 			// infinite refresh loop.
-			if (originalRequest._retry) {
-				logoutUser?.();
+			if (!originalRequest || originalRequest._authRetried) {
+				onUnauthorized?.();
 				return Promise.reject(error);
 			}
-			originalRequest._retry = true;
+			originalRequest._authRetried = true;
 
 			try {
-				const refreshRes = await axios.post(
-					`${API_BASE_URL}${refreshPath}`,
-					{},
-					{
-						withCredentials: true,
-						xsrfCookieName: "csrftoken",
-						xsrfHeaderName: "X-CSRFToken",
-					},
-				);
-				setAuthTokens({ access: true });
+				if (!refreshPromise) {
+					refreshPromise = axios.post(`${API_BASE_URL}${refreshPath}`, {}, API_CLIENT_CONFIG)
+						.finally(() => { refreshPromise = null; });
+				}
+				await refreshPromise;
+				setAuthTokens?.({ access: true });
 
 				return instance(originalRequest);
 			} catch (refreshErr) {
-				logoutUser?.();
+				onUnauthorized?.();
 				return Promise.reject(refreshErr);
 			}
 		},

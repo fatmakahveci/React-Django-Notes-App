@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .admin_audit import AuditAdminMixin
+from .models import AuditEvent, CustomUser
 
 
 @admin.register(CustomUser)
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(AuditAdminMixin, UserAdmin):
     model = CustomUser
     ordering = ("email",)
     list_display = ("email", "user_name", "is_staff", "is_active")
@@ -45,3 +46,38 @@ class CustomUserAdmin(UserAdmin):
     )
 
     filter_horizontal = ("groups", "user_permissions")
+
+
+@admin.register(AuditEvent)
+class AuditEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "occurred_at",
+        "action",
+        "actor_identifier",
+        "target_type",
+        "target_id",
+        "ip_address",
+    )
+    list_filter = ("action", "occurred_at")
+    search_fields = ("actor_identifier", "target_type", "target_id", "target_repr")
+    readonly_fields = (
+        "occurred_at",
+        "actor",
+        "actor_identifier",
+        "action",
+        "target_type",
+        "target_id",
+        "target_repr",
+        "changes",
+        "ip_address",
+        "user_agent",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

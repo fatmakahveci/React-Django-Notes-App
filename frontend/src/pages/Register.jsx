@@ -1,11 +1,14 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "../router";
 import AuthContext from "../context/AuthContext";
+import api from "../api/axios";
+import { normalizeApiError } from "../api/client";
+import { passwordMeetsPolicy } from "../auth/passwordPolicy";
 import "./login.css";
 
 const USERNAME_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%.]).{8,24}$/;
+const PASSWORD_POLICY_URL = "/api/accounts/password-policy/";
 
 const Register = () => {
 	const navigate = useNavigate();
@@ -19,6 +22,17 @@ const Register = () => {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState("");
 	const [touched, setTouched] = useState(false);
+	const [passwordPolicy, setPasswordPolicy] = useState(null);
+
+	useEffect(() => {
+		let active = true;
+		api.get(PASSWORD_POLICY_URL)
+			.then((response) => { if (active) setPasswordPolicy(response.data); })
+			.catch((requestError) => {
+				if (active) setError(normalizeApiError(requestError, "Unable to load password requirements.").message);
+			});
+		return () => { active = false; };
+	}, []);
 
 	// Redirect if already logged in
 	useEffect(() => {
@@ -33,7 +47,10 @@ const Register = () => {
 		() => USERNAME_REGEX.test(userName),
 		[userName],
 	);
-	const validPwd = useMemo(() => PWD_REGEX.test(pwd), [pwd]);
+	const validPwd = useMemo(
+		() => passwordMeetsPolicy(pwd, passwordPolicy),
+		[pwd, passwordPolicy],
+	);
 	const validMatch = useMemo(
 		() => pwd === matchPwd && matchPwd.length > 0,
 		[pwd, matchPwd],
@@ -70,7 +87,7 @@ const Register = () => {
 	};
 
 	return (
-		<div className="login-page">
+		<main className="login-page">
 			<div className="login-card">
 				<Link to="/" className="login-brandLink">
 					Notes
@@ -90,7 +107,9 @@ const Register = () => {
 							<label htmlFor="register-username">Username</label>
 							<input
 								id="register-username"
+								name="username"
 								type="text"
+								autoComplete="username"
 								placeholder="yourname"
 								value={userName}
 								onChange={(e) => setUserName(e.target.value)}
@@ -108,7 +127,9 @@ const Register = () => {
 							<label htmlFor="register-email">Email</label>
 							<input
 								id="register-email"
+								name="email"
 								type="email"
+								autoComplete="email"
 								placeholder="you@example.com"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
@@ -125,17 +146,18 @@ const Register = () => {
 							<label htmlFor="register-password">Password</label>
 							<input
 								id="register-password"
+								name="password"
 								type="password"
 								placeholder="At least 8 characters"
 								autoComplete="new-password"
+								maxLength={passwordPolicy?.max_length}
 								value={pwd}
 								onChange={(e) => setPwd(e.target.value)}
 								required
 							/>
 							{touched && !validPwd && (
 								<div className="login-hint">
-									8–24 characters, uppercase, lowercase,
-									number, and one special character (!@#$%).
+									{passwordPolicy?.requirements?.join(" ") || "Loading password requirements..."}
 								</div>
 							)}
 						</div>
@@ -144,7 +166,9 @@ const Register = () => {
 							<label htmlFor="register-password-confirm">Confirm password</label>
 							<input
 								id="register-password-confirm"
+								name="match_password"
 								type="password"
+								autoComplete="new-password"
 								placeholder="Repeat password"
 								value={matchPwd}
 								onChange={(e) => setMatchPwd(e.target.value)}
@@ -171,7 +195,7 @@ const Register = () => {
 					Already have an account? <Link to="/login">Sign in</Link>
 				</div>
 			</div>
-		</div>
+		</main>
 	);
 };
 

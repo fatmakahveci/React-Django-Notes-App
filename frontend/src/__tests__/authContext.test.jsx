@@ -65,7 +65,7 @@ test("clears authentication and reports a failed login", async () => {
 
 	fireEvent.click(screen.getByText("login"));
 
-	await waitFor(() => expect(screen.getByTestId("error")).toHaveTextContent("Login failed"));
+	await waitFor(() => expect(screen.getByTestId("error")).toHaveTextContent("Unable to reach the server"));
 	expect(screen.getByTestId("user")).toHaveTextContent("anonymous");
 });
 

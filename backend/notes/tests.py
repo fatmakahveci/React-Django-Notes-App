@@ -1,4 +1,7 @@
 from django.test import TestCase
+from django.core.cache import cache
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework.test import APIClient
 
 from accounts.models import CustomUser
@@ -7,6 +10,7 @@ from .models import Note
 
 class NotesAPITests(TestCase):
     def setUp(self):
+        cache.clear()
         self.client = APIClient()
 
         self.client.post(
@@ -168,3 +172,30 @@ class NotesAPITests(TestCase):
         self.assertEqual(first_page.data["count"], 13)
         self.assertEqual(len(first_page.data["results"]), 12)
         self.assertEqual(len(second_page.data["results"]), 1)
+
+    def test_note_list_query_count_does_not_grow_with_page_size(self):
+        Note.objects.bulk_create(
+            [Note(user=self.user, title=f"Query {index}") for index in range(12)]
+        )
+
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get("/api/notes/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"]), 12)
+        self.assertTrue(all(item["user"] == "notesuser" for item in response.data["results"]))
+        self.assertLessEqual(len(queries), 3, [query["sql"] for query in queries])
+
+    def test_note_list_index_matches_owner_and_update_order(self):
+        with connection.cursor() as cursor:
+            constraints = connection.introspection.get_constraints(
+                cursor,
+                Note._meta.db_table,
+            )
+
+        index = constraints["note_user_updated_idx"]
+        self.assertTrue(index["index"])
+        self.assertEqual(index["columns"], ["user_id", "updated"])
+
+        query_plan = Note.objects.filter(user=self.user).explain()
+        self.assertIn("note_user_updated_idx", query_plan)
