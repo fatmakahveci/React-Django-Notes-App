@@ -1,0 +1,10 @@
+services:
+  backend:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings_staging
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set a strong staging DJANGO_SECRET_KEY}
+      DATABASE_URL: ${DATABASE_URL:?Set the staging PostgreSQL DATABASE_URL}
+      DJANGO_CACHE_URL: ${DJANGO_CACHE_URL:?Set the staging Redis URL}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?Set staging hosts}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:-}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}

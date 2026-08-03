@@ -11,7 +11,9 @@ class UserNoteQuerysetMixin:
     """Restrict every notes operation to the authenticated owner."""
 
     def get_queryset(self):
-        return Note.objects.filter(user=self.request.user)
+        # The serializer exposes user.user_name; joining here keeps list query
+        # counts constant instead of loading the owner once per note.
+        return Note.objects.filter(user=self.request.user).select_related("user")
 
 
 class NotePagination(PageNumberPagination):

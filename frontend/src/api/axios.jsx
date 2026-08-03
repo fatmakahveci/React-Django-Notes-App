@@ -1,12 +1,5 @@
-import axios from "axios";
-import { API_BASE_URL } from "../config";
+import { createApiClient } from "./client";
 
-const api = axios.create({
-	baseURL: API_BASE_URL,
-	withCredentials: true,
-	xsrfCookieName: "csrftoken",
-	xsrfHeaderName: "X-CSRFToken",
-	headers: { "Content-Type": "application/json" },
-});
+const api = createApiClient();
 
 export default api;

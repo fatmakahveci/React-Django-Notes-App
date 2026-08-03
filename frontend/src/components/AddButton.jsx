@@ -1,4 +1,3 @@
-import React from "react";
 import { NavLink } from "../router";
 import Add from "../assets/add.svg?react";
 
