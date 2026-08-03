@@ -5,6 +5,16 @@ on:
     workflows: [Fullstack CI]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag whose images should be rebuilt
+        required: false
+        type: string
+      deploy:
+        description: Deploy after rebuilding an existing release
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -25,11 +35,26 @@ jobs:
       contents: write
       pull-requests: write
     outputs:
-      created: ${{ steps.release.outputs.release_created }}
-      tag: ${{ steps.release.outputs.tag_name }}
-      sha: ${{ steps.release.outputs.sha }}
+      created: ${{ steps.manual.outputs.created || steps.release.outputs.release_created }}
+      tag: ${{ steps.manual.outputs.tag || steps.release.outputs.tag_name }}
+      sha: ${{ steps.manual.outputs.sha || steps.release.outputs.sha }}
     steps:
+      - name: Resolve existing release
+        if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
+        id: manual
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
+          release_sha=$(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
+          [[ "$release_sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "created=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$release_sha" >> "$GITHUB_OUTPUT"
+
       - name: Update release pull request or publish GitHub Release
+        if: github.event_name != 'workflow_dispatch' || inputs.release_tag == ''
         id: release
         uses: googleapis/release-please-action@v4
         with:
@@ -46,6 +71,8 @@ jobs:
       packages: write
       id-token: write
       security-events: write
+    env:
+      IMAGE_NAME: ghcr.io/fatmakahveci/react-django-notes-app-${{ matrix.component }}
     strategy:
       fail-fast: true
       matrix:
@@ -68,7 +95,7 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}-${{ matrix.component }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ needs.release.outputs.tag }}
             type=raw,value=sha-${{ needs.release.outputs.sha }}
@@ -86,7 +113,7 @@ jobs:
       - name: Scan published image
         uses: aquasecurity/trivy-action@0.35.0
         with:
-          image-ref: ghcr.io/${{ github.repository }}-${{ matrix.component }}@${{ steps.build.outputs.digest }}
+          image-ref: ${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
           format: sarif
           output: trivy-${{ matrix.component }}.sarif
           severity: HIGH,CRITICAL
@@ -94,8 +121,8 @@ jobs:
           exit-code: "1"
 
       - name: Upload scan result to Security
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles(format('trivy-{0}.sarif', matrix.component)) != ''
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-${{ matrix.component }}.sarif
           category: release-${{ matrix.component }}
@@ -103,14 +130,16 @@ jobs:
       - name: Attest image provenance
         uses: actions/attest-build-provenance@v3
         with:
-          subject-name: ghcr.io/${{ github.repository }}-${{ matrix.component }}
+          subject-name: ${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
   deploy:
     name: Deploy production
     needs: [release, images]
-    if: needs.release.outputs.created == 'true'
+    if: >-
+      needs.release.outputs.created == 'true' &&
+      (github.event_name != 'workflow_dispatch' || inputs.deploy)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
