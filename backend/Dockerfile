@@ -7,7 +7,8 @@ WORKDIR /app
 
 COPY requirements.txt ./
 RUN python -m pip install --no-cache-dir --upgrade "pip>=26.1.2" \
-    && python -m pip install --no-cache-dir --requirement requirements.txt
+    && python -m pip install --no-cache-dir --requirement requirements.txt \
+    && python -m pip uninstall --yes pip setuptools msgpack
 
 RUN addgroup --system app && adduser --system --ingroup app app
 
