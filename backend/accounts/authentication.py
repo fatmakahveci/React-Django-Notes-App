@@ -2,6 +2,7 @@ from django.conf import settings
 from rest_framework.authentication import CSRFCheck
 from rest_framework.exceptions import PermissionDenied
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from config.observability import bind_user
 
 
 def enforce_csrf(request):
@@ -24,4 +25,6 @@ class CookieJWTAuthentication(JWTAuthentication):
         validated_token = self.get_validated_token(raw_token.encode())
         if request.method not in {"GET", "HEAD", "OPTIONS", "TRACE"}:
             enforce_csrf(request)
-        return self.get_user(validated_token), validated_token
+        user = self.get_user(validated_token)
+        bind_user(user)
+        return user, validated_token
