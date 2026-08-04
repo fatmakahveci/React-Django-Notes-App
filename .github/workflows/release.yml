@@ -140,7 +140,8 @@ jobs:
     needs: [release, images]
     if: >-
       needs.release.outputs.created == 'true' &&
-      (github.event_name != 'workflow_dispatch' || inputs.deploy)
+      github.event_name == 'workflow_dispatch' &&
+      inputs.deploy
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
