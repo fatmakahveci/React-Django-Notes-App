@@ -43,6 +43,11 @@ backup, and restore verification.
 
 ## Demo
 
+![React Django Notes App walkthrough showing the landing page, sign-in, note list, and autosaving editor](docs/images/demo.gif)
+
+The walkthrough uses fictional local data and demonstrates the complete flow
+from the public landing page to authenticated note editing.
+
 ### 1. Create an account or sign in
 
 Open the landing page and select **Create account**. Registration validates the
