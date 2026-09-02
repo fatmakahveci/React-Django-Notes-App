@@ -70,12 +70,7 @@ scenario validates semantic landmarks and interactive controls with axe-core:
 ```bash
 npm --prefix frontend test
 npm --prefix frontend run build
-npm --prefix frontend run lighthouse
 ```
-
-Lighthouse CI audits the production build three times and fails CI below 90
-for performance, 100 for accessibility, 95 for best practices, or 100 for SEO.
-The generated HTML and JSON reports are retained as CI artifacts for 14 days.
 
 Landing-page screenshots use width-descriptor `srcset` candidates and explicit
 intrinsic dimensions to avoid oversized downloads and layout shifts. Keep

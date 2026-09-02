@@ -1,8 +1,8 @@
 # Core web framework and REST API
-Django==5.2.16
+Django==5.2.17
 django-cors-headers==4.9.0
 django-otp==1.7.0
-djangorestframework==3.16.1
+djangorestframework==3.17.2
 djangorestframework-simplejwt==5.5.1
 drf-spectacular==0.30.0
 gunicorn==23.0.0
@@ -12,4 +12,4 @@ PyJWT==2.13.0
 psycopg2-binary==2.9.12
 redis==8.1.0
 sentry-sdk==2.66.1
-sqlparse==0.5.5
+sqlparse==0.6.0

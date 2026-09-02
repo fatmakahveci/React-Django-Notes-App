@@ -308,15 +308,10 @@ npm test
 npm run build
 npm --prefix frontend run test:coverage
 
-# Production frontend quality budgets
-cd frontend
-npm run build
-npm run lighthouse
 ```
 
 CI enforces at least 90% backend coverage; frontend thresholds of 75% for lines
-and statements, 70% for branches, and 65% for functions; and Lighthouse scores
-of 90 performance, 100 accessibility, 95 best practices, and 100 SEO.
+and statements, 70% for branches, and 65% for functions.
 
 Pull requests also validate dependency vulnerabilities, the OpenAPI schema
 against real endpoint behavior, production Compose configuration, release
