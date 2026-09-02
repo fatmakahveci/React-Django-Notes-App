@@ -105,9 +105,6 @@ npm --prefix frontend run test:coverage
 npm --prefix frontend run build
 npm --prefix frontend audit --audit-level=high
 
-# Run after user-visible or performance-sensitive frontend changes
-cd frontend
-npm run lighthouse
 ```
 
 Changes to persistence, Docker, backup commands, or recovery fixtures must also
