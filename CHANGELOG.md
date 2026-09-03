@@ -4,6 +4,13 @@ All notable changes are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the structure recommended by
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.7](https://github.com/fatmakahveci/React-Django-Notes-App/compare/v1.1.6...v1.1.7) (2026-09-03)
+
+
+### Documentation
+
+* professionalize README ([#79](https://github.com/fatmakahveci/React-Django-Notes-App/issues/79)) ([4b67323](https://github.com/fatmakahveci/React-Django-Notes-App/commit/4b6732325e3b9342a74a897a14e7569f401e0862))
+
 ## [1.1.6](https://github.com/fatmakahveci/React-Django-Notes-App/compare/v1.1.5...v1.1.6) (2026-09-02)
 
 
