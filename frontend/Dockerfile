@@ -13,7 +13,8 @@ RUN npm run build
 FROM nginxinc/nginx-unprivileged:1.31.3-alpine3.24
 
 USER root
-RUN apk upgrade --no-cache
+RUN apk upgrade --no-cache \
+    && apk add --no-cache 'libuuid>=2.42.3-r0'
 USER 101
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
