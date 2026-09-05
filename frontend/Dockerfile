@@ -10,7 +10,9 @@ ARG VITE_API_BASE_URL=http://127.0.0.1:8000
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.31.3-alpine3.24
+# Static SPA hosting does not use the full image's image-filter/XSLT/GeoIP modules.
+# The slim variant excludes their unused libuuid dependency.
+FROM nginxinc/nginx-unprivileged:1.31.3-alpine-slim
 
 USER root
 RUN apk upgrade --no-cache
